@@ -1,17 +1,3 @@
-# from abc import abstractmethod
-
-# from typing import List
-
-# import os
-# from utility import (
-#     param_types,
-#     printcolor,
-#     semafore_agregation,
-#     agg_results,
-#     parse_params,
-#     mincolor,
-# )
-
 from tqdm import tqdm
 
 class BaseValidation:
@@ -21,19 +7,19 @@ class BaseValidation:
         sampler,
         scorer,
         pipeline='31',
-        # exclude_tests=[],
+        exclude_tests=[],
         custom_tests=[],
     ):
 
         self.model = model
         self.sampler = sampler
         self.scorer = scorer
+        self.pipeline = pipeline
         
-        # self.exclude_tests = exclude_tests,
-        self.custom_tests = custom_tests,
-        
-        self.default_test_list = []
-        self.test_list = []
+        self.custom_tests = custom_tests
+        self.exclude_tests = exclude_tests
+        self.default_test_list = [] # определяется через pipeline
+        self.test_list = [] # определяется в соответствии с exclude и custom tests
         self.result_of_validation = None
 
     def validate(self):
@@ -44,6 +30,9 @@ class BaseValidation:
         self.result_of_validation = tests_result
         
         return tests_result
+    
+    def _parse_pipeline(self):
+        return dict()
     
     def aggregate_results(self):
         pass

@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 29 10:50:37 2022
-
-@author: 19721394
-"""
 from multiprocessing import Semaphore
 import numpy as np
 import pandas as pd

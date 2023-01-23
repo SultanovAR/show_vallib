@@ -1,1 +1,1 @@
-from sbe_vallib.validation.table.binary import BinaryValidation
+from sbe_vallib.validation.table.binary.binary import BinaryValidation
