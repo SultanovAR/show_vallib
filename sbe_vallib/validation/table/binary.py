@@ -1,4 +1,4 @@
-from sbe_vallib.validation.typedata.table.tablevalidation import TableValidation
+from sbe_vallib.validation.table.tablevalidation import TableValidation
 from .model_quality import key_metric_test
 
 

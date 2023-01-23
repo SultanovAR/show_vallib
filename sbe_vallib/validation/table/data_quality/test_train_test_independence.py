@@ -2,10 +2,7 @@ from matplotlib.pyplot import table, title
 import pandas as pd
 import sys, os
 
-path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-path=os.path.join(path, 'utility')
-sys.path.append(path)
-from utility import make_test_report
+from sbe_vallib.validation.utility import make_test_report
 
 
 def train_test_independence_test(train, 

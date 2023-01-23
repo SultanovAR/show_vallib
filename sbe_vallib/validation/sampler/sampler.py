@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from .base import BaseSampler
 
 
-class Sampler(BaseSampler):
+class TabularSampler(BaseSampler):
     def __init__(
         self,
         X_train,

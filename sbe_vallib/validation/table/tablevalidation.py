@@ -1,5 +1,5 @@
 from sbe_vallib.validation.basevalidation import BaseValidation
-from sbe_vallib.validation.typedata.table.data_quality import (
+from sbe_vallib.validation.table.data_quality import (
     train_test_independence_test,
 )
 

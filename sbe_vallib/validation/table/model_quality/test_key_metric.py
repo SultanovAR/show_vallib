@@ -1,9 +1,7 @@
 import sys, os
 
-path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-path=os.path.join(path, 'utility')
-sys.path.append(path)
-from utility import validation_result_reversed,validation_result, make_test_report, agg_two_criterion
+from sbe_vallib.validation.utility import validation_result_reversed,validation_result, make_test_report, agg_two_criterion
+
 
 import numpy as np
 import pandas as pd

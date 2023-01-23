@@ -4,12 +4,7 @@ from tqdm.notebook import tqdm
 from scipy import stats
 import sys, os
 
-path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-sys.path.append(path)
-path=os.path.join(path, 'utility')
-sys.path.append(path)
-
-from utility import make_test_report
+from sbe_vallib.validation.utility import make_test_report
 
 def extremal_missing_values_test(train, 
                                 feature_names = None, 

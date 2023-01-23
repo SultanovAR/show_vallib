@@ -4,10 +4,7 @@ from tqdm.notebook import tqdm
 from scipy.stats import chi2
 import sys, os
 
-path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-path=os.path.join(path, 'utility')
-sys.path.append(path)
-from utility import validation_result, make_test_report
+from sbe_vallib.validation.utility import validation_result, make_test_report
 
 #color_text = {'Green':Fore.GREEN, "Yellow":Fore.YELLOW, 'Red':Fore.RED}
 
