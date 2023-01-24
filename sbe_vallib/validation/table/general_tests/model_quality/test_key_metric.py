@@ -1,3 +1,5 @@
+import pandas as pd
+
 from sbe_vallib.validation.sampler import BinarySampler
 
 
@@ -14,7 +16,12 @@ def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, use_predict_proba
         else:
             y_pred = model.predict(oos['X'])
         metrics.append(scorer.score(oos['y_true'], y_pred))
-    return metrics
+    return {
+        'semaphore': 'grey',
+        'result_dict': {'metrics': metrics},
+        'result_dataframes': [pd.DataFrame(metrics)],
+        'result_plots': []
+        }
 
 
 def key_metric_test(

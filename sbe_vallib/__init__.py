@@ -1,1 +1,1 @@
-from sbe_vallib.validation import BinaryValidation, BinaryScorer, BinarySampler
+from sbe_vallib.validation import BaseValidation, BinaryScorer, BinarySampler

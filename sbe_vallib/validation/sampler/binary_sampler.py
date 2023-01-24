@@ -58,6 +58,7 @@ class BinarySampler(BaseSampler):
         generator = np.random.default_rng(seed=seed)
         size_of_train = len(self.source_train["X"])
         size_of_oos = len(self.source_oos["X"])
+        
 
         if self.bootstrap:
             self.index = {
@@ -70,6 +71,8 @@ class BinarySampler(BaseSampler):
                 target_for_stratify = self._concat(
                     self.source_train["y_true"], self.source_oos['y_true']
                 )
+                
+            self.index = {'train': None, 'oos': None}
             self.index['train'], self.index['oos'] = train_test_split(np.arange(size_of_train + size_of_oos),
                                                                       test_size=size_of_oos,
                                                                       random_state=seed,
