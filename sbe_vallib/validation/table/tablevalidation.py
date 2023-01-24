@@ -1,7 +1,3 @@
-from sbe_vallib.validation.basevalidation import BaseValidation
-from sbe_vallib.validation.table.general_tests.data_quality import (
-    train_test_independence_test,
-)
 
 
 class TableValidation(BaseValidation):
@@ -10,15 +6,19 @@ class TableValidation(BaseValidation):
         model,
         sampler,
         scorer,
-        pipeline,
+        pipeline=pipeline_31,
         exclude_tests=[],
-        custom_tests=[],
-        **kwargs,
+        custom_tests={},
+        # **kwargs,
     ):
         super().__init__(
             model, sampler, scorer, pipeline, exclude_tests, custom_tests
         )
         
-        self.default_test_list = self._parse_pipeline()
-        self.config = kwargs
-        # define a common set of tests for tabular data
+        if isinstance(pipeline, str):
+            self.pipeline = self._parse_pipeline()
+        else:
+            self.pipeline = pipeline
+            
+        self.pipeline['tests'].update(custom_tests)
+        self.pipeline['tests'] = {self.pipeline['tests'][key] for key in self.pipeline['tests'] if key not in exclude_tests}

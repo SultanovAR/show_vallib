@@ -35,7 +35,7 @@ class BinarySampler(BaseSampler):
     def _concat(self, head, tail):
         """A function to deal with pd.DataFrame and np.array in the same manner"""
         if self._is_pandas(head) and self._is_pandas(tail):
-            return pd.concat((head, tail))
+            return pd.concat([head, tail])
         return np.concatenate((head, tail))
 
     def _get_index(self, data, index):
@@ -68,7 +68,7 @@ class BinarySampler(BaseSampler):
             target_for_stratify = None
             if self.stratify:
                 target_for_stratify = self._concat(
-                    [self.source_train["y_true"], self.source_oos['y_true']]
+                    self.source_train["y_true"], self.source_oos['y_true']
                 )
             self.index['train'], self.index['oos'] = train_test_split(np.arange(size_of_train + size_of_oos),
                                                                       test_size,
@@ -97,7 +97,7 @@ class BinarySampler(BaseSampler):
         if self.bootstrap:
             for key in self.source_oos:
                 result[key] = self._get_index(
-                    self.source_oos, self.index['oos'])
+                    self.source_oos[key], self.index['oos'])
         else:
             for key in self.source_train:
                 concated = self._concat(

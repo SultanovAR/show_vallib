@@ -7,21 +7,23 @@ from sbe_vallib.validation.utils.metrics import (
     MULTICLASS_METRICS,
 )
 
+# добавить 
 
 class BinaryScorer(BaseScorer):
-    def __init__(self, metrics=BINARY_METRICS, cutoff=0.5, custom_scorers={}, **kwargs):
-        super().__init__(metrics, custom_scorers, **kwargs)
+    def __init__(self, metrics=BINARY_METRICS, cutoff=0.5, custom_metrics={}, **kwargs):
+        super().__init__(metrics, custom_metrics, **kwargs)
         self.cutoff = cutoff
+        
 
     def score(self, y_true, y_proba):
         answer = {}
-        for metric_name in self.base_metrics:
-            if self.base_metrics[metric_name]["use_probas"]:
-                answer[metric_name] = self.base_metrics[metric_name]["callable"](
+        for metric_name in self.metrics:
+            if self.metrics[metric_name]["use_probas"]:
+                answer[metric_name] = self.metrics[metric_name]["callable"](
                     y_true, y_proba[:, 1]
                 )
             else:
-                answer[metric_name] = self.base_metrics[metric_name]["callable"](
+                answer[metric_name] = self.metrics[metric_name]["callable"](
                     y_true, np.array(y_proba[:, 1] > self.cutoff, dtype=int)
                 )
 
@@ -34,8 +36,8 @@ class RegressionScorer(BaseScorer):
 
     def score(self, y_true, y_preds):
         answer = {}
-        for metric_name in self.base_metrics:
-            answer[metric_name] = self.base_metrics[metric_name]["callable"](
+        for metric_name in self.metrics:
+            answer[metric_name] = self.metrics[metric_name]["callable"](
                 y_true, y_preds
             )
 
@@ -48,9 +50,9 @@ class MulticlassScorer(BaseScorer):
 
     def score(self, y_true, y_preds):
         answer = {}
-        for metric_name in self.base_metrics:
-            answer[metric_name] = self.base_metrics[metric_name]["callable"](
-                y_true, y_preds, average=self.base_metrics[metric_name]["average"]
+        for metric_name in self.metrics:
+            answer[metric_name] = self.metrics[metric_name]["callable"](
+                y_true, y_preds, average=self.metrics[metric_name]["average"]
             )
 
         return answer

@@ -1,3 +1,5 @@
+from sbe_vallib.validation.sampler import BinarySampler
+
 from matplotlib.pyplot import table, title
 import pandas as pd
 import sys, os

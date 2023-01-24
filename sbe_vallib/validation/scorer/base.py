@@ -2,13 +2,11 @@ from abc import ABC, abstractmethod
 # from sbe_vallib.metrics import METRICS
 from sklearn.metrics import f1_score
 
-METRICS = {'f1': f1_score}
-
 
 class BaseScorer(ABC):
-    def __init__(self, metrics, custom_scorers={}, **kwargs):
-        self.base_metrics = metrics
-        self.custom_scorers = custom_scorers
+    def __init__(self, metrics: dict, custom_metrics={}, **kwargs):
+        self.metrics = metrics
+        self.metrics.update(custom_metrics)
         # self.metrics = {key: METRICS[key] for key in metrics}
     
 
