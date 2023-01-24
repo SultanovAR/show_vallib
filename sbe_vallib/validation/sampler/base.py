@@ -1,39 +1,41 @@
 import pandas as pd
 from abc import ABC, abstractmethod
+import typing as tp
 
 
 class BaseSampler(ABC):
     def __init__(
-        self, X_train, y_train, X_oos, y_oos, *, bootstrap_conf_int=False, **kwargs
+        self,
+        train,
+        oos: tp.Optional[dict],
+        oot: tp.Optional[dict],
+        bootstrap: bool = False,
+        **kwargs
     ):
 
-        """
-        Объект для семплирования выборок
+        self.source_train = train
+        self.source_oos = oos
+        self.source_oot = oot
+        self.source_state = True
 
-        @X_train: обучающая выборка
-        @y_train: значения целевой переменной для обучения
-        @X_oos: тестовая выборка
-        @y_oos: значения целевой переменной для тестирования
-        @bootstrap_conf_int: флаг метода получения подвыборок
+        self.bootstrap = bootstrap
 
-        return Object
-        """
+    def reset(self):
+        self.source_state = True
 
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_oos = X_oos
-        self.y_oos = y_oos
+    @property
+    def train(self):
+        return self.source_train
 
-        self.len_train = len(X_train)
-        self.len_oos = len(X_oos)
+    @property
+    def oos(self):
+        return self.source_oos
 
-        self.test_size = self.len_oos / (self.len_oos + self.len_train)
-
-        self.X = pd.concat([X_train, X_oos])
-        self.y = pd.concat([y_train, y_oos])
-
-        self.bootstrap = bootstrap_conf_int
+    @property
+    def oot(self):
+        return self.source_oot
 
     @abstractmethod
-    def sample(self, num):
-        raise NotImplementedError
+    def set_seed(self):
+        self.source_state = False
+        pass
