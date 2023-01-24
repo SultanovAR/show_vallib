@@ -6,10 +6,19 @@ METRICS = {'f1': f1_score}
 
 
 class BaseScorer(ABC):
-    def __init__(self, metrics, custom_metrics={}, **kwargs):
+    def __init__(self, metrics, custom_scorers={}, **kwargs):
         self.metrics = {key: METRICS[key] for key in metrics}
-        self.metrics.update(custom_metrics)
+    
 
+    def _init_scorers(self):
+        scorers = dict()
+        for metric in self.metrics:
+            scorers[metric] = self.init_scorer(self.metrics[metric])
+    
     @abstractmethod
-    def score(self, model, data):
+    def init_scorer(self, metric: callable):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def score(self, *args, **kwargs):
         raise NotImplementedError

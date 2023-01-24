@@ -1,35 +1,57 @@
 import sys, os
 
-from sbe_vallib.validation.utility import validation_result_reversed,validation_result, make_test_report, agg_two_criterion
+from sbe_vallib.validation.utility import (
+    validation_result_reversed,
+    validation_result,
+    make_test_report,
+    agg_two_criterion,
+)
 from sbe_vallib.validation.sampler import BinarySampler
 
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, average_precision_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    average_precision_score,
+    roc_auc_score,
+)
 
-def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, **kwargs):
+
+def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, use_predict_proba=True, **kwargs):
     metrics = []
     for i in range(n_iter):
         sampler.set_seed(i)
         train = sampler.train
         oos = sampler.oos
         if not sampler.bootstrap:
-            model.fit(X=train['X'], y=train['y'])
-        metrics.append(scorer(model, oos))
+            model.fit(X=train["X"], y=train["y"])
+        if use_predict_proba:
+            y_pred = model.predict_proba(oos['X'])
+        else:
+            y_pred = model.predict(oos['X'])
+        metrics.append(scorer(oos['y_true'], y_pred))
     return metrics
 
-# def key_metric_test(y_oos,
-#                     y_oos_answer,
-#                     metric = 'gini',
-#                     thresholds =(0.2, 0.4),
-#                     use_scores = True,
-#                     semafore_reverser= False,
-#                     key_class = None,
-#                     cutoff = 0.5, 
-#                     top=None,
-#     **params):
-    
+
+def key_metric_test(
+    y_oos,
+    y_oos_answer,
+    metric="gini",
+    thresholds=(0.2, 0.4),
+    use_scores=True,
+    semafore_reverser=False,
+    key_class=None,
+    cutoff=0.5,
+    top=None,
+    **params
+):
+    pass
+
+
 #     y_test = y_oos
 #     y_test_answer = y_oos_answer
 #     metric = params.get('key_metric', metric)
@@ -46,7 +68,6 @@ def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, **kwargs):
 #     top = params.get('top', top)
 
 
-    
 #     class_names  = np.array(sorted(classes))
 
 #     metric_regression = {}
@@ -57,7 +78,7 @@ def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, **kwargs):
 #         "precision": lambda y_true, y_pred: precision_score(y_true, y_pred,average='macro'),
 #         "recall": lambda y_true, y_pred: recall_score(y_true, y_pred, average='macro')
 #     }
-    
+
 #     metrics_one_classes ={
 #         'gini':  lambda y_true, y_pred: 2*roc_auc_score(y_true, y_pred)-1,
 #         'roc-auc': lambda y_true, y_pred: roc_auc_score(y_true, y_pred),
@@ -79,7 +100,7 @@ def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, **kwargs):
 #                 y_test_result_alg = y_test_answer[:, class_]
 #             else:
 #                 y_test_result_alg = np.array(list(map(lambda x: int(class_names[x.index(max(x))]==class_), y_test_answer)))
-#             metric_value_test.append(  metric(y_test, y_test_result_alg))      
+#             metric_value_test.append(  metric(y_test, y_test_result_alg))
 #     elif metrics_all_classses.get(metric_name, None) is not None:
 #         metric = metrics_all_classses[metric_name]
 #         if use_scores:
@@ -105,18 +126,18 @@ def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, **kwargs):
 #                 y_test_result_alg = y_test_answer[:, class_]
 #             else:
 #                 y_test_result_alg = np.array(list(map(lambda x: int(class_names[x.index(max(x))]==class_), y_test_answer)))
-#             metric_value_test.append(metric(y_test, y_test_result_alg, **params))     
-            
-            
-#     test_result = []  
+#             metric_value_test.append(metric(y_test, y_test_result_alg, **params))
 
-    
+
+#     test_result = []
+
+
 #     if semafore_reverser:
 #         test_result = list(map(lambda metr: validation_result_reversed(metr, thresholds), metric_value_test))
 #         test_result_global = validation_result_reversed(np.mean(metric_value_test), thresholds)
 #     else:
 #         test_result=list(map(lambda metr: validation_result(metr, thresholds), metric_value_test))
-#         test_result_global = validation_result(np.mean(metric_value_test), thresholds)      
+#         test_result_global = validation_result(np.mean(metric_value_test), thresholds)
 #     if key_class is not None:
 #         test_result_global = test_result[class_names.index(key_class)]
 #     result = pd.DataFrame({'Наименование класса': class_names,
