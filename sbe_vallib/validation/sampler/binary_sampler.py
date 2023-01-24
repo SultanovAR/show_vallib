@@ -14,6 +14,7 @@ class BinarySampler(BaseSampler):
         oos: dict,
         oot: dict = None,
         bootstrap: bool = False,
+        stratify: bool = True,
         **kwargs
     ):
         """
@@ -25,22 +26,23 @@ class BinarySampler(BaseSampler):
         :return: None
         """
         super().__init__(train, oos, oot, bootstrap, **kwargs)
-        self.check()
+        self.stratify = stratify
 
-    def check(self):
-        """
-        The check function is used to determine whether the input data is a DataFrame or an array.
-        The check function returns True if the input data is a DataFrame and False if it's an array.
+    def _is_pandas(self, data):
+        """A function to deal with pd.DataFrame and np.array in the same manner"""
+        return hasattr(data, 'iloc')
 
-        :param self: Access the attributes and methods of the class in python
-        :return: A boolean value indicating whether the data is a pandas dataframe
-        """
-        if isinstance(self.source_train["X"], pd.DataFrame):
-            self.is_data_frame = True
-        elif isinstance(self.source_train["X"], np.ndarray):
-            self.is_data_frame = False
+    def _concat(self, head, tail):
+        """A function to deal with pd.DataFrame and np.array in the same manner"""
+        if self._is_pandas(head) and self._is_pandas(tail):
+            return pd.concat((head, tail))
+        return np.concatenate((head, tail))
 
-        self.concat = {True: pd.concat, False: np.concatenate}
+    def _get_index(self, data, index):
+        """A function to deal with pd.DataFrame and np.array in the same manner"""
+        if self._is_pandas(data):
+            return data.iloc[index]
+        return data[index]
 
     def set_seed(self, seed: int):
         """
@@ -62,77 +64,46 @@ class BinarySampler(BaseSampler):
                 "oos": generator.integers(0, size_of_oos, size_of_oos),
             }
         else:
-            permutation = generator.permutation(np.arange(size_of_train + size_of_oos))
-            self.index = {
-                "train": permutation[:size_of_train],
-                "oos": permutation[size_of_train:],
-            }
-
+            test_size = size_of_oos / (size_of_train + size_of_oos)
+            target_for_stratify = None
+            if self.stratify:
+                target_for_stratify = self._concat(
+                    [self.source_train["y_true"], self.source_oos['y_true']]
+                )
+            self.index['train'], self.index['oos'] = train_test_split(np.arange(size_of_train + size_of_oos),
+                                                                      test_size,
+                                                                      random_state=seed,
+                                                                      shuffle=True,
+                                                                      stratify=target_for_stratify)
 
     @property
     def train(self):
         if self.source_state or self.bootstrap:
             return self.source_train
-        else:
-            X_concat = self.concat[self.is_data_frame](
-                [self.source_train["X"], self.source_oos["X"]]
-            )
-            y_true_concat = self.concat[self.is_data_frame](
-                [self.source_train["y_true"], self.source_oos["y_true"]]
-            )
-            y_pred_concat = np.concatenate(
-                [self.source_train["y_pred"], self.source_oos["y_pred"]]
-            ) # через трейнтестсплит/возможно отсутствие y_pred / обложить тестами
 
-            if self.is_data_frame:
-                return {
-                    "X": X_concat.loc[self.index["train"]],
-                    "y_true": y_true_concat.loc[self.index["train"]],
-                    "y_pred": y_pred_concat[self.index["train"]],
-                }
-            else:
-                return {
-                    "X": X_concat[self.index["train"]],
-                    "y_true": y_true_concat[self.index["train"]],
-                    "y_pred": y_pred_concat[self.index["train"]],
-                }
+        result = {}
+        for key in self.source_train:
+            concated = self._concat(
+                self.source_train[key], self.source_oos[key])
+            result[key] = self._get_index(concated, self.index["train"])
+        return result
 
     @property
     def oos(self):
         if self.source_state:
             return self.source_oos
-        elif self.bootstrap:
-            if self.is_data_frame:
-                X = self.source_oos["X"].iloc[self.index["oos"]]
-                y_true = self.source_oos["y_true"].iloc[self.index["oos"]]
-            else:
-                X = self.source_oos["X"][self.index["train"]]
-                y_true = self.source_oos["y_true"][self.index["oos"]]
 
-            y_pred = self.source_oos["y_pred"][self.index["oos"]]
-            return {"X": X, "y_true": y_true, "y_pred": y_pred}
+        result = {}
+        if self.bootstrap:
+            for key in self.source_oos:
+                result[key] = self._get_index(
+                    self.source_oos, self.index['oos'])
         else:
-            X_concat = self.concat[self.is_data_frame](
-                [self.source_train["X"], self.source_oos["X"]]
-            )
-            y_true_concat = self.concat[self.is_data_frame](
-                [self.source_train["y_true"], self.source_oos["y_true"]]
-            )
-            y_pred_concat = np.concatenate(
-                [self.source_train["y_pred"], self.source_oos["y_pred"]]
-            )
-            if self.is_data_frame:
-                return {
-                    "X": X_concat.loc[self.index["oos"]],
-                    "y_true": y_true_concat.loc[self.index["oos"]],
-                    "y_pred": y_pred_concat[self.index["oos"]],
-                }
-            else:
-                return {
-                    "X": X_concat[self.index["oos"]],
-                    "y_true": y_true_concat[self.index["oos"]],
-                    "y_pred": y_pred_concat[self.index["oos"]],
-                }
+            for key in self.source_train:
+                concated = self._concat(
+                    self.source_train[key], self.source_oos[key])
+                result[key] = self._get_index(concated, self.index["train"])
+        return result
 
     @property
     def oot(self):
