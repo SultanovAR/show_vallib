@@ -1,24 +1,4 @@
-import sys, os
-
-from sbe_vallib.validation.utility import (
-    validation_result_reversed,
-    validation_result,
-    make_test_report,
-    agg_two_criterion,
-)
 from sbe_vallib.validation.sampler import BinarySampler
-
-
-import numpy as np
-import pandas as pd
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-    average_precision_score,
-    roc_auc_score,
-)
 
 
 def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, use_predict_proba=True, **kwargs):
@@ -28,12 +8,12 @@ def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, use_predict_proba
         train = sampler.train
         oos = sampler.oos
         if not sampler.bootstrap:
-            model.fit(X=train["X"], y=train["y"])
+            model.fit(X=train["X"], y=train["y_true"])
         if use_predict_proba:
             y_pred = model.predict_proba(oos['X'])
         else:
             y_pred = model.predict(oos['X'])
-        metrics.append(scorer(oos['y_true'], y_pred))
+        metrics.append(scorer.score(oos['y_true'], y_pred))
     return metrics
 
 
