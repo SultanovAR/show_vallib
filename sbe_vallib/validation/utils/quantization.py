@@ -34,16 +34,19 @@ class Quantization(BaseEstimator, TransformerMixin):
 
         hist = physt.h1(data, bins=bins)
         hist = hist.merge_bins(min_frequency=len(data) * self.merge_quantile)
-        return hist.edges
+        print(hist.frequencies)
+        bins = np.concatenate([[-np.inf], hist.edges, [np.inf]])
+        return bins
 
     def fit(self, X: Union[np.ndarray, pd.DataFrame], y=None, columns: List = None):
         if columns is None:
             columns = interface.all_columns(X)
+
         data = np.array(interface.get_columns(X, columns))
         self._check_nan(data)
         check_array(X, force_all_finite=False)
 
-        for i, col in enumerate(columns):
+        for i, col in enumerate(range(data.shape[1])):
             self.bins[col] = self.merging_binning(data[:, i])
         return self
 

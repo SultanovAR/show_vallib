@@ -1,4 +1,4 @@
-from sbe_vallib.validation.table.tablevalidation import TableValidation, pipeline_31
+from sbe_vallib.validation.table.tablevalidation import TableValidation  # , pipeline_31
 from sbe_vallib.validation.scorer import BinaryScorer
 from sbe_vallib.validation.table.general_tests.model_quality import key_metric_test
 
@@ -9,7 +9,7 @@ class BinaryValidation(TableValidation):
         model,
         sampler,
         scorer,
-        pipeline=pipeline_31,
+        pipeline="pipeline_31",
         exclude_tests=[],
         custom_tests=[],
         **kwargs,

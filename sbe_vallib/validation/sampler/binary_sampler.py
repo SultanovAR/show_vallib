@@ -27,6 +27,7 @@ class BinarySampler(BaseSampler):
         """
         super().__init__(train, oos, oot, bootstrap, **kwargs)
         self.stratify = stratify
+        self.index = dict()
 
     def _is_pandas(self, data):
         """A function to deal with pd.DataFrame and np.array in the same manner"""
@@ -64,14 +65,13 @@ class BinarySampler(BaseSampler):
                 "oos": generator.integers(0, size_of_oos, size_of_oos),
             }
         else:
-            test_size = size_of_oos / (size_of_train + size_of_oos)
             target_for_stratify = None
             if self.stratify:
                 target_for_stratify = self._concat(
                     self.source_train["y_true"], self.source_oos['y_true']
                 )
             self.index['train'], self.index['oos'] = train_test_split(np.arange(size_of_train + size_of_oos),
-                                                                      test_size,
+                                                                      test_size=size_of_oos,
                                                                       random_state=seed,
                                                                       shuffle=True,
                                                                       stratify=target_for_stratify)
@@ -102,7 +102,7 @@ class BinarySampler(BaseSampler):
             for key in self.source_train:
                 concated = self._concat(
                     self.source_train[key], self.source_oos[key])
-                result[key] = self._get_index(concated, self.index["train"])
+                result[key] = self._get_index(concated, self.index["oos"])
         return result
 
     @property
