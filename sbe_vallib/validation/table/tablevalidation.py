@@ -1,3 +1,4 @@
+from sbe_vallib.validation.basevalidation import BaseValidation
 
 
 class TableValidation(BaseValidation):
@@ -6,7 +7,7 @@ class TableValidation(BaseValidation):
         model,
         sampler,
         scorer,
-        pipeline=pipeline_31,
+        pipeline='pipeline_31',
         exclude_tests=[],
         custom_tests={},
         # **kwargs,
@@ -14,11 +15,12 @@ class TableValidation(BaseValidation):
         super().__init__(
             model, sampler, scorer, pipeline, exclude_tests, custom_tests
         )
-        
+
         if isinstance(pipeline, str):
             self.pipeline = self._parse_pipeline()
         else:
             self.pipeline = pipeline
-            
+
         self.pipeline['tests'].update(custom_tests)
-        self.pipeline['tests'] = {self.pipeline['tests'][key] for key in self.pipeline['tests'] if key not in exclude_tests}
+        self.pipeline['tests'] = {self.pipeline['tests'][key]
+                                  for key in self.pipeline['tests'] if key not in exclude_tests}

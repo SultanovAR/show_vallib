@@ -3,12 +3,12 @@ import pandas as pd
 import numpy as np
 
 
-def is_pandas(self, data: tp.Union[np.ndarray, pd.DataFrame, pd.Series]):
+def is_pandas(data: tp.Union[np.ndarray, pd.DataFrame, pd.Series]):
     """A function to deal with pd.DataFrame, pd.Series and np.array in the same manner"""
     return hasattr(data, 'iloc')
 
 
-def concat(self, arrays: tp.List[tp.Union[np.ndarray, pd.DataFrame, pd.Series]]):
+def concat(arrays: tp.List[tp.Union[np.ndarray, pd.DataFrame, pd.Series]]):
     """A function to deal with pd.DataFrame, pd.Series and np.array in the same manner"""
     assert len(arrays) > 0, 'argument list is empty'
     if all([is_pandas(i) for i in arrays]):
@@ -16,9 +16,9 @@ def concat(self, arrays: tp.List[tp.Union[np.ndarray, pd.DataFrame, pd.Series]])
     return np.concatenate(arrays)
 
 
-def get_index(self, data: tp.Union[np.ndarray, pd.DataFrame, pd.Series], index):
+def get_index(data: tp.Union[np.ndarray, pd.DataFrame, pd.Series], index):
     """A function to deal with pd.DataFrame and np.array in the same manner"""
-    if self._is_pandas(data):
+    if is_pandas(data):
         return data.iloc[index]
     return data[index]
 
@@ -41,4 +41,6 @@ def set_column(where: tp.Union[np.ndarray, pd.DataFrame],
 def all_columns(data: tp.Union[np.ndarray, pd.DataFrame]):
     if is_pandas(data):
         return data.columns
-    return np.arange(data.shape[1]).astype(int)
+    if len(data.shape) > 1:
+        return np.arange(data.shape[1]).astype(int)
+    return None
