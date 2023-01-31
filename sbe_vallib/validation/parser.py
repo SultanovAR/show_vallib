@@ -33,7 +33,6 @@ def parse_pipeline(path_to_xlsx: str):
     )
 
     for test in pipeline_for_coding:
-        pass
         pipeline_for_coding[test]["params"] = ast.literal_eval(
             pipeline_for_coding[test]["params"]
         )

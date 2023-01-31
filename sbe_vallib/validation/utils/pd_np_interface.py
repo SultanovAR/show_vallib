@@ -13,6 +13,8 @@ def concat(arrays: tp.List[tp.Union[np.ndarray, pd.DataFrame, pd.Series]]):
     assert len(arrays) > 0, 'argument list is empty'
     if all([is_pandas(i) for i in arrays]):
         return pd.concat(arrays)
+    elif all(isinstance(i, list) for i in arrays):
+        return sum(arrays, [])
     return np.concatenate(arrays)
 
 
@@ -20,6 +22,8 @@ def get_index(data: tp.Union[np.ndarray, pd.DataFrame, pd.Series], index):
     """A function to deal with pd.DataFrame and np.array in the same manner"""
     if is_pandas(data):
         return data.iloc[index]
+    elif isinstance(data, list):
+        return [data[i] for i in index]
     return data[index]
 
 

@@ -25,7 +25,9 @@ class BinarySampler(BaseSampler):
         :param **kwargs: Pass a variable number of keyword arguments to a function
         :return: None
         """
-        super().__init__(train, oos, oot, bootstrap, **kwargs)
+        super().__init__(train, oos, oot, **kwargs)
+        
+        self.bootstrap = bootstrap
         self.stratify = stratify
         self.index = dict()
 
