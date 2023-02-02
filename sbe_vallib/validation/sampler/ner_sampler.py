@@ -14,14 +14,7 @@ class NerSampler(BaseSampler):
         self, train: dict, oos: dict, oot: dict = None, stratify: bool = True, **kwargs
     ):
         """
-        for example:
-        tr
-        train['true'][i] = {'id': '2',
-                    'tokens': ['AL-AIN', ',', 'United', 'Arab', 'Emirates', '1996-12-06'],
-                    'ner_tags': [5, 0, 5, 6, 6, 0]}
-
-        train['pred'][i] = {'id': '2'
-                    'ner_tags': [5, 0, 5, 6, 6, 0]}
+        train = {'X': list(str), 'y_true': list(list(str)), 'y_pred': list(list(str))}
 
         """
 
@@ -30,13 +23,13 @@ class NerSampler(BaseSampler):
         self.index = dict()
 
     def set_seed(self, seed: int, bootstrap: bool = False):
-        
+
         self.bootstrap = bootstrap
         self.source_state = False
         generator = np.random.default_rng(seed=seed)
-        
-        size_of_train = len(self.source_train['true'])
-        size_of_oos = len(self.source_oos['true'])
+
+        size_of_train = len(self.source_train["X"])
+        size_of_oos = len(self.source_oos["X"])
 
         if bootstrap:
             self.index = {
@@ -71,7 +64,6 @@ class NerSampler(BaseSampler):
         result = {}
         if self.bootstrap:
             for key in self.source_oos:
-                print(key)
                 result[key] = get_index(self.source_oos[key], self.index["oos"])
         else:
             for key in self.source_train:
