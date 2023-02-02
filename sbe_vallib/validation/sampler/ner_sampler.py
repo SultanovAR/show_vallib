@@ -11,7 +11,7 @@ from sbe_vallib.validation.utils import concat, get_index
 
 class NerSampler(BaseSampler):
     def __init__(
-        self, train: dict, oos: dict, oot: dict = None, stratify: bool = True, **kwargs
+        self, train: dict, oos: dict, oot: dict = None, **kwargs
     ):
         """
         train = {'X': list(str), 'y_true': list(list(str)), 'y_pred': list(list(str))}
@@ -19,7 +19,6 @@ class NerSampler(BaseSampler):
         """
 
         super().__init__(train, oos, oot, **kwargs)
-        self.stratify = stratify
         self.index = dict()
 
     def set_seed(self, seed: int, bootstrap: bool = False):
