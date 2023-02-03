@@ -13,6 +13,9 @@ from sklearn.metrics import (
     mean_absolute_percentage_error,
 )
 
+import seqeval.metrics
+from seqeval.scheme import IOB2
+
 
 def gini_score(y_true, y_proba):
     return 2 * roc_auc_score(y_true, y_proba) - 1
@@ -46,4 +49,10 @@ MULTICLASS_METRICS = {
         "multiclass": None,
         "average": "micro",
     },
-} # metric params
+}  # metric params
+
+NER_IOB_METRICS = {
+    "precision": {"callable": seqeval.metrics.precision_score, "schema": IOB2},
+    "f1": {"callable": seqeval.metrics.f1_score, "schema": IOB2},
+    "recall": {"callable": seqeval.metrics.recall_score, "schema": IOB2},
+}
