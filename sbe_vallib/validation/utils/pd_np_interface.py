@@ -28,6 +28,15 @@ def get_index(data: tp.Union[np.ndarray, pd.DataFrame, pd.Series], index):
 
 
 def get_columns(data: tp.Union[np.ndarray, pd.DataFrame], columns):
+    """
+    The get_columns function returns a subset of the columns from the input data.
+    
+    :param data: tp.Union[np.ndarray]: Make the function compatible with both numpy arrays and pandas dataframes
+    :param [pd.DataFrame]: Check if the data is a pandas dataframe
+    :param columns: Select a subset of columns from the data
+    :return: A subset of the columns in data
+    :doc-author: Trelent
+    """
     if is_pandas(data):
         return data[columns]
     return data[:, columns]
