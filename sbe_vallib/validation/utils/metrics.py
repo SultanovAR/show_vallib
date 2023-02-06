@@ -51,8 +51,34 @@ MULTICLASS_METRICS = {
     },
 }  # metric params
 
+
+def ner_recall_score(y_true, y_pred, **kwargs):
+    cr = seqeval.metrics.classification_report(
+        y_true, y_pred, output_dict=True, **kwargs)
+    return {tag: cr[tag]['recall'] for tag in cr}
+
+
+def ner_f1_score(y_true, y_pred, **kwargs):
+    cr = seqeval.metrics.classification_report(
+        y_true, y_pred, output_dict=True, **kwargs)
+    return {tag: cr[tag]['f1-score'] for tag in cr}
+
+
+def ner_precision_score(y_true, y_pred, **kwargs):
+    cr = seqeval.metrics.classification_report(
+        y_true, y_pred, output_dict=True, **kwargs)
+    return {tag: cr[tag]['precision'] for tag in cr}
+
+
+def ner_support_score(y_true, y_pred, **kwargs):
+    cr = seqeval.metrics.classification_report(
+        y_true, y_pred, output_dict=True, **kwargs)
+    return {tag: cr[tag]['support'] for tag in cr}
+
+
 NER_IOB_METRICS = {
-    "precision": {"callable": seqeval.metrics.precision_score, "schema": IOB2},
-    "f1": {"callable": seqeval.metrics.f1_score, "schema": IOB2},
-    "recall": {"callable": seqeval.metrics.recall_score, "schema": IOB2},
+    "precision_score": {"callable": ner_precision_score, "params": {"schema": IOB2}},
+    "f1_score": {"callable": ner_f1_score, "params": {"schema": IOB2}},
+    "recall_score": {"callable": ner_recall_score, "params": {"schema": IOB2}},
+    "support": {"callable": ner_support_score, "params": {"schema": IOB2}},
 }
