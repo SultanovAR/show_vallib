@@ -6,7 +6,7 @@ def test_key_metric(
     model,
     scorer,
     sampler,
-    n_iter=200,
+    n_iter=10,
     **kwargs,
 ):
 
@@ -15,7 +15,8 @@ def test_key_metric(
         sampler.set_seed(i, bootstrap=True)
         # train = sampler.train
         oos = sampler.oos
-        y_pred = model.predict(oos["X"])
+        y_pred = sampler.oos['y_pred']
+        # y_pred = model.predict(oos["X"])
         metrics.append(scorer.score(oos["y_true"], y_pred))
         
     return {
