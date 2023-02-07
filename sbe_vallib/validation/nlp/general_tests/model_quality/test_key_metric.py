@@ -67,7 +67,6 @@ def test_key_metric(model, scorer, sampler, type_data='oos', average='macro',
 
     semaphore, df_report = report_key_metric(
         metrics, scorer._classes, average, metric_name, min_support, thresholds)
-
     return {
         "semaphore": semaphore,
         "result_dict": {"metrics": metrics},

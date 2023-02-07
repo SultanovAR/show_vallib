@@ -15,7 +15,6 @@ class NerSampler(BaseSampler):
     ):
         """
         train = {'X': list(str), 'y_true': list(list(str)), 'y_pred': list(list(str))}
-
         """
 
         super().__init__(train, oos, oot, **kwargs)

@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 # from lightgbm import LGBMClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.metrics import roc_auc_score, make_scorer
-from sbe_vallib.validation.utils import concat
+from sbe_vallib.validation.utils import concat, get_index
 
 import pandas as pd
 import numpy as np
@@ -17,35 +17,58 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 gini_scorer = make_scorer(lambda x, y: -1 + 2 * roc_auc_score(x, y), needs_proba=True)
 
-
 RANDOM_STATE = 42
 
 
 def train_test_independence_test(
     sampler,
     n_splits=4,
-    n_iter=200,
+    n_iter=20,
     thresholds=(0.95, 0.99),
     recalc_indp=False,
-    max_num_values=7_500_000,
+    max_num_values=7_500,
     **kwargs,
 ):
 
     sampler.reset()
 
-    # продумать
-    # if max_num_values is not None:
-    #     total_values = (len(sampler.train['X']) + len(sampler.oos['X']))
-    #     if total_values > max_num_values:
-    #         frac = max_num_values / total_values
-    #         print('\tTrain/oos samples are too huge for independence test, calculating on {:.4f} fraction'.format(frac))
-    #         X_train = X_train.sample(frac=frac, random_state=RANDOM_STATE)
-    #         X_test = X_test.sample(frac=frac, random_state=RANDOM_STATE)
+    size_of_train = len(sampler.train["X"])
+    size_of_oos = len(sampler.oos["X"])
 
-    X_full = concat([sampler.train["X"], sampler.oos["X"]])
-    y_full = pd.Series(np.zeros(len(sampler.train["X"]) + len(sampler.oos["X"])))
-    y_full[len(sampler.train["X"]) :] = 1
+    if max_num_values is not None:
+        total_values = size_of_train + size_of_oos
+        if total_values > max_num_values:
 
+            generator = np.random.default_rng(seed=42)
+            generator.integers(0, size_of_oos, size_of_oos)
+
+            frac = max_num_values / total_values
+
+            print(
+                "\tTrain/oos samples are too huge for independence test, calculating on {:.4f} fraction".format(
+                    frac
+                )
+            )
+            X_full = concat(
+                [
+                    get_index(
+                        sampler.train["X"],
+                        generator.integers(0, size_of_train, int(size_of_train * frac)),
+                    ),
+                    get_index(
+                        sampler.oos["X"],
+                        generator.integers(0, size_of_oos, int(size_of_oos * frac)),
+                    ),
+                ]
+            )
+            y_full = pd.Series(np.zeros(len(X_full)))
+            y_full[int(size_of_train * frac):] = 1
+
+    else:
+        X_full = concat([sampler.train["X"], sampler.oos["X"]])
+        y_full = pd.Series(np.zeros(len(sampler.train["X"]) + len(sampler.oos["X"])))
+        y_full[len(sampler.train["X"]) :] = 1
+        
     gini_fact, gini_random_list = calculate_train_test_independence(
         X_full, y_full, n_splits, n_iter
     )
