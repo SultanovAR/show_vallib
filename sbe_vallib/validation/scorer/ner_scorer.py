@@ -11,13 +11,13 @@ class NerScorer(BaseScorer):
                  custom_metrics={}):
         super().__init__(metrics, custom_metrics)
 
-    def ner_metrics(self, y_true, y_pred, classes, **kwargs):
+    def ner_metrics(self, y_true, y_pred, model, **kwargs):
         answer = defaultdict(dict)
-        evaluator = Evaluator(y_true, y_pred, classes, loader='list')
+        evaluator = Evaluator(y_true, y_pred, model.classes_, loader='list')
         ner_metrics_macro, ner_metrics_by_tag = evaluator.evaluate()
 
         for schema in ['ent_type', 'partial', 'strict', 'exact']:
-            for tag in classes + ['macro']:
+            for tag in model.classes_ + ['macro']:
                 if tag == 'macro':
                     answer[f'f1_{schema}'].update(
                         {tag: ner_metrics_macro[schema]['f1']})
