@@ -23,38 +23,43 @@ def aggregate_semaphore_key_metric(metric_avg: float, semaphores: tp.List[str],
         return 'green'
 
 
-def report_key_metric(metrics: tp.Dict, classes: tp.List[str], average: str, 
-                      metric_name: str, min_support: int, thresholds: tp.Tuple):
+def report_key_metric(metrics: tp.Dict, metric_name: str, classes: tp.List[str],
+                      average: str, min_support=20, thresholds=(0.4, 0.6)):
     table = []
-    for  in classes:
+    if isinstance(metrics[metric_name], dict):  # multiclass
+        for key in classes:
+            if metrics['support'][key] < min_support:
+                semaphore = 'gray'
+            else:
+                semaphore = semaphore_by_threshold(
+                    metrics[metric_name][key], thresholds)
+            table.append({'type': key,
+                          'support': metrics['support'][key],
+                          metric_name: metrics[metric_name][key],
+                          'semaphore': semaphore})
 
-        if metrics['support'][tag] < min_support:
-            semaphore = 'gray'
-        else:
-            semaphore = semaphore_by_threshold(
-                metrics[f'{metric_name}_by_{tag}'], thresholds)
-        table.append({'tag': tag,
-                      'support': metrics[f'support_by_{tag}'],
-                      f'{metric_name}': metrics[f'{metric_name}_by_{tag}'],
-                      'semaphore': semaphore})
-
-    metric_avg = metrics[metric_name][average]
-    semaphores = [i['semaphore'] for i in table]
-    agregated_semaphore = aggregate_semaphore_key_metric(
-        metric_avg, semaphores, thresholds)
-    table.append({
-        'tag': average,
-        'support': metrics['support'][average],
-        f'{metric_name}': metric_avg,
-        'semaphore': agregated_semaphore
-    })
+        semaphores = [i['semaphore'] for i in table]
+        agregated_semaphore = aggregate_semaphore_key_metric(
+            metrics[metric_name][average], semaphores, thresholds)
+        table.append({'type': f'agg_{average}',
+                      'support': metrics['support'][average],
+                      metric_name: metrics[metric_name][average],
+                      'semaphore': agregated_semaphore})
+    else:  # float
+        agregated_semaphore = semaphore_by_threshold(
+            metrics[metric_name], thresholds)
+        table.append({'type': f'agg_{average}',
+                      'support': metrics['support'],
+                      metric_name: metrics[metric_name],
+                      'semaphore': agregated_semaphore})
 
     df_table = pd.DataFrame.from_records(table)
     return agregated_semaphore, df_table
 
 
-def test_key_metric(model, scorer, sampler, type_data='oos', average='macro',
-                    metric_name='f1-score', thresholds=(0.4, 0.6), min_support=20, **kwargs):
+def test_key_metric(model, scorer, sampler, metric_name,
+                    classes, average, type_data='oos',
+                    thresholds=(0.4, 0.6), min_support=20, **kwargs):
     sampler.reset()
     data = getattr(sampler, type_data)
     if 'y_pred' not in data:
@@ -66,7 +71,7 @@ def test_key_metric(model, scorer, sampler, type_data='oos', average='macro',
                            sampler=sampler, **kwargs)
 
     semaphore, df_report = report_key_metric(
-        metrics, scorer._classes, average, metric_name, min_support, thresholds)
+        metrics, metric_name, classes, average, min_support, thresholds)
     return {
         "semaphore": semaphore,
         "result_dict": {"metrics": metrics},

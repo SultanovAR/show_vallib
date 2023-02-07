@@ -54,26 +54,26 @@ MULTICLASS_METRICS = {
 
 def ner_recall_score(y_true, y_pred, **kwargs):
     cr = seqeval.metrics.classification_report(
-        y_true, y_pred, output_dict=True, **kwargs)
-    return {tag: cr[tag]['recall'] for tag in cr}
+        y_true, y_pred, output_dict=True)
+    return {tag.replace(' avg', ''): cr[tag]['recall'] for tag in cr}
 
 
 def ner_f1_score(y_true, y_pred, **kwargs):
     cr = seqeval.metrics.classification_report(
-        y_true, y_pred, output_dict=True, **kwargs)
-    return {tag: cr[tag]['f1-score'] for tag in cr}
+        y_true, y_pred, output_dict=True)
+    return {tag.replace(' avg', ''): cr[tag]['f1-score'] for tag in cr}
 
 
 def ner_precision_score(y_true, y_pred, **kwargs):
     cr = seqeval.metrics.classification_report(
-        y_true, y_pred, output_dict=True, **kwargs)
-    return {tag: cr[tag]['precision'] for tag in cr}
+        y_true, y_pred, output_dict=True)
+    return {tag.replace(' avg', ''): cr[tag]['precision'] for tag in cr}
 
 
 def ner_support_score(y_true, y_pred, **kwargs):
     cr = seqeval.metrics.classification_report(
-        y_true, y_pred, output_dict=True, **kwargs)
-    return {tag: cr[tag]['support'] for tag in cr}
+        y_true, y_pred, output_dict=True)
+    return {tag.replace(' avg', ''): cr[tag]['support'] for tag in cr}
 
 
 NER_IOB_METRICS = {
