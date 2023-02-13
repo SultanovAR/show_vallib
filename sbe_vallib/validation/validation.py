@@ -2,7 +2,7 @@ import pandas as pd
 from sbe_vallib.validation.parser import parse_pipeline, get_callable_from_path
 
 
-class BaseValidation:
+class Validation:
     def __init__(
         self,
         model,

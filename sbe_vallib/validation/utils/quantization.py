@@ -34,7 +34,6 @@ class Quantization(BaseEstimator, TransformerMixin):
 
         hist = physt.h1(data, bins=bins)
         hist = hist.merge_bins(min_frequency=len(data) * self.merge_quantile)
-        print(hist.frequencies)
         bins = np.concatenate([[-np.inf], hist.edges, [np.inf]])
         return bins
 

@@ -15,7 +15,8 @@ class BinarySampler(BaseSampler):
         train: dict,
         oos: dict,
         oot: dict = None,
-        bootstrap: bool = False, # скорее всего, нужно как в ner sampler, ибо train_test_independense требует ресемплинга
+        # скорее всего, нужно как в ner sampler, ибо train_test_independense требует ресемплинга
+        bootstrap: bool = False,
         stratify: bool = True,
         **kwargs
     ):
@@ -28,8 +29,8 @@ class BinarySampler(BaseSampler):
         :return: None
         """
         super().__init__(train, oos, oot, **kwargs)
-        
-        # self.bootstrap = bootstrap
+
+        self.bootstrap = bootstrap
         self.stratify = stratify
         self.index = dict()
 
@@ -49,7 +50,7 @@ class BinarySampler(BaseSampler):
             return data.iloc[index]
         return data[index]
 
-    def set_seed(self, seed: int, method='bootstrap'):
+    def set_seed(self, seed: int):
         """
         The set_seed function is used to set the seed for the random number generator.
         The purpose of this function is to ensure that we can reproduce our results by
@@ -62,7 +63,6 @@ class BinarySampler(BaseSampler):
         generator = np.random.default_rng(seed=seed)
         size_of_train = len(self.source_train["X"])
         size_of_oos = len(self.source_oos["X"])
-        
 
         if self.bootstrap:
             self.index = {
@@ -75,7 +75,7 @@ class BinarySampler(BaseSampler):
                 target_for_stratify = self._concat(
                     self.source_train["y_true"], self.source_oos['y_true']
                 )
-                
+
             self.index = {'train': None, 'oos': None}
             self.index['train'], self.index['oos'] = train_test_split(np.arange(size_of_train + size_of_oos),
                                                                       test_size=size_of_oos,
@@ -83,8 +83,8 @@ class BinarySampler(BaseSampler):
                                                                       shuffle=True,
                                                                       stratify=target_for_stratify)
 
-    # @property
-    def train(self, initial=False):
+    @property
+    def train(self):  # , seed=42, gen_method='bootstrap'):  # initial=False):
         if self.source_state or self.bootstrap:
             return self.source_train
 
