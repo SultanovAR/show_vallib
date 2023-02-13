@@ -9,7 +9,6 @@ class BaseSampler(ABC):
         train,
         oos: tp.Optional[dict],
         oot: tp.Optional[dict],
-        # bootstrap: bool = False,
         **kwargs
     ):
 
@@ -17,8 +16,6 @@ class BaseSampler(ABC):
         self.source_oos = oos
         self.source_oot = oot
         self.source_state = True
-
-        # self.bootstrap = bootstrap
 
     def reset(self):
         self.source_state = True

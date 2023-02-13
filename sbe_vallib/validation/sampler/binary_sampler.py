@@ -6,6 +6,8 @@ from pandas import DataFrame
 from sklearn.model_selection import train_test_split
 from sbe_vallib.validation.sampler import BaseSampler
 
+from sbe_vallib.validation.utils import concat, get_index, is_pandas
+
 
 class BinarySampler(BaseSampler):
     def __init__(
@@ -13,7 +15,7 @@ class BinarySampler(BaseSampler):
         train: dict,
         oos: dict,
         oot: dict = None,
-        bootstrap: bool = False,
+        bootstrap: bool = False, # скорее всего, нужно как в ner sampler, ибо train_test_independense требует ресемплинга
         stratify: bool = True,
         **kwargs
     ):
@@ -27,7 +29,7 @@ class BinarySampler(BaseSampler):
         """
         super().__init__(train, oos, oot, **kwargs)
         
-        self.bootstrap = bootstrap
+        # self.bootstrap = bootstrap
         self.stratify = stratify
         self.index = dict()
 
@@ -47,7 +49,7 @@ class BinarySampler(BaseSampler):
             return data.iloc[index]
         return data[index]
 
-    def set_seed(self, seed: int):
+    def set_seed(self, seed: int, method='bootstrap'):
         """
         The set_seed function is used to set the seed for the random number generator.
         The purpose of this function is to ensure that we can reproduce our results by
@@ -81,8 +83,8 @@ class BinarySampler(BaseSampler):
                                                                       shuffle=True,
                                                                       stratify=target_for_stratify)
 
-    @property
-    def train(self):
+    # @property
+    def train(self, initial=False):
         if self.source_state or self.bootstrap:
             return self.source_train
 

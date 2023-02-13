@@ -5,7 +5,7 @@ from sbe_vallib.validation.sampler import BinarySampler
 def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, use_predict_proba=True, **kwargs):
     metrics = []
     for i in range(n_iter):
-        sampler.set_seed(i)
+        sampler.set_seed(i, split='bootstrap') # обсудить 
         train = sampler.train
         oos = sampler.oos
         if not sampler.bootstrap:

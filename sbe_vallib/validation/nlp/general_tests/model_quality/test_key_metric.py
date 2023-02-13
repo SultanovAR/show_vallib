@@ -58,8 +58,8 @@ def report_key_metric(metrics: tp.Dict, metric_name: str, classes: tp.List[str],
 
 
 def test_key_metric(model, scorer, sampler,
-                    metric_name, average, type_data='oos',
-                    thresholds=(0.4, 0.6), min_support=20, **kwargs):
+                    metric_name='precision_score', average='macro', type_data='oos',
+                    thresholds=(0.4, 0.6), min_support=20, **kwargs): # обсудить с Азатиком
     sampler.reset()
     data = getattr(sampler, type_data)
     if 'y_pred' not in data:
