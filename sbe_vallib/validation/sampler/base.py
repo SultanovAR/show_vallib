@@ -1,4 +1,3 @@
-import pandas as pd
 from abc import ABC, abstractmethod
 import typing as tp
 
@@ -33,6 +32,6 @@ class BaseSampler(ABC):
         return self.source_oot
 
     @abstractmethod
-    def set_seed(self):
+    def set_state(self):
         self.source_state = False
         pass

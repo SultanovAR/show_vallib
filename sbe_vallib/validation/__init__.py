@@ -1,5 +1,5 @@
 from sbe_vallib.validation.scorer import BinaryScorer
-from sbe_vallib.validation.sampler import BinarySampler, NerSampler
+from sbe_vallib.validation.sampler import SupervisedSampler, SupervisedSampler
 from sbe_vallib.validation.validation import Validation
 
 from sbe_vallib.validation.parser import parse_pipeline, get_callable_from_path

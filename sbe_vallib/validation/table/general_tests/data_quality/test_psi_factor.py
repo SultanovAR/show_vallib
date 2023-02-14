@@ -7,7 +7,7 @@ from scipy.special import rel_entr
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder
 
-from sbe_vallib.validation.sampler import BinarySampler
+from sbe_vallib.validation.sampler import SupervisedSampler
 from sbe_vallib.validation.utils import pd_np_interface as interface
 from sbe_vallib.validation.utils.quantization import Quantization
 from sbe_vallib.validation.utils.report_sberds import semaphore_by_threshold, worst_semaphore
@@ -15,8 +15,8 @@ from sbe_vallib.validation.utils.report_sberds import semaphore_by_threshold, wo
 
 def psi(train, oos, base=None, axis=0):
     EPS = 1e-7
-    train = train / np.sum(train) + EPS
-    oos = oos / np.sum(oos) + EPS
+    train = (train + EPS) / np.sum(train + EPS)
+    oos = (oos + EPS) / np.sum(oos + EPS)
     return np.sum(rel_entr(train, oos) + rel_entr(oos, train))
 
 
@@ -35,16 +35,16 @@ def report_factor_psi(psi_of_feat: tp.Dict, threshold: tp.Tuple):
     res_df = psi_of_feat
     for feat in psi_of_feat:
         res_df[feat]['feature'] = feat
-        res_df[feat]['hist_train'] = [
-            f'{i:.3f}' for i in psi_of_feat[feat]['hist_train']]
-        res_df[feat]['hist_oos'] = [
-            f'{i:.3f}' for i in psi_of_feat[feat]['hist_oos']]
+        res_df[feat]['hist_train'] = " ;".join([
+            f'{i:.3f}' for i in psi_of_feat[feat]['hist_train']])
+        res_df[feat]['hist_oos'] = " ;".join([
+            f'{i:.3f}' for i in psi_of_feat[feat]['hist_oos']])
         res_df[feat]['semaphore'] = semaphores[feat]
 
     result = dict()
     result['semaphore'] = worst_semaphore(semaphores.values())
     result['result_dict'] = psi_of_feat
-    result['result_dataframes'] = pd.DataFrame.from_records(res_df)
+    result['result_dataframes'] = [pd.DataFrame.from_records(res_df)]
     result['result_plots'] = []
     return result
 

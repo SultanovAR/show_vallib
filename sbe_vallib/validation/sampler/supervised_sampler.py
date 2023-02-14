@@ -6,18 +6,15 @@ from pandas import DataFrame
 from sklearn.model_selection import train_test_split
 from sbe_vallib.validation.sampler import BaseSampler
 
-from sbe_vallib.validation.utils import concat, get_index, is_pandas
+from sbe_vallib.validation.utils import concat, get_index
 
 
-class BinarySampler(BaseSampler):
+class SupervisedSampler(BaseSampler):
     def __init__(
         self,
         train: dict,
         oos: dict,
         oot: dict = None,
-        # скорее всего, нужно как в ner sampler, ибо train_test_independense требует ресемплинга
-        bootstrap: bool = False,
-        stratify: bool = True,
         **kwargs
     ):
         """
@@ -29,28 +26,12 @@ class BinarySampler(BaseSampler):
         :return: None
         """
         super().__init__(train, oos, oot, **kwargs)
-
-        self.bootstrap = bootstrap
-        self.stratify = stratify
+        self._seed = None
+        self._gen_method = None
+        self._stratify = None
         self.index = dict()
 
-    def _is_pandas(self, data):
-        """A function to deal with pd.DataFrame and np.array in the same manner"""
-        return hasattr(data, 'iloc')
-
-    def _concat(self, head, tail):
-        """A function to deal with pd.DataFrame and np.array in the same manner"""
-        if self._is_pandas(head) and self._is_pandas(tail):
-            return pd.concat([head, tail])
-        return np.concatenate((head, tail))
-
-    def _get_index(self, data, index):
-        """A function to deal with pd.DataFrame and np.array in the same manner"""
-        if self._is_pandas(data):
-            return data.iloc[index]
-        return data[index]
-
-    def set_seed(self, seed: int):
+    def set_state(self, seed: int, gen_method: str = 'resampling', stratify: bool = False):
         """
         The set_seed function is used to set the seed for the random number generator.
         The purpose of this function is to ensure that we can reproduce our results by
@@ -60,39 +41,44 @@ class BinarySampler(BaseSampler):
         :return: The value of the seed
         """
         self.source_state = False
+        self._seed = seed
+        self._gen_method = gen_method
+        self._stratify = stratify
         generator = np.random.default_rng(seed=seed)
-        size_of_train = len(self.source_train["X"])
-        size_of_oos = len(self.source_oos["X"])
+        size_train = len(self.source_train["X"])
+        size_oos = len(self.source_oos["X"])
 
-        if self.bootstrap:
+        if gen_method == 'bootstrap':
             self.index = {
                 "train": None,
-                "oos": generator.integers(0, size_of_oos, size_of_oos),
+                "oos": generator.integers(0, size_oos, size_oos),
             }
-        else:
+        elif gen_method == 'resampling':
             target_for_stratify = None
-            if self.stratify:
-                target_for_stratify = self._concat(
-                    self.source_train["y_true"], self.source_oos['y_true']
+            if stratify:
+                target_for_stratify = concat(
+                    (self.source_train["y_true"], self.source_oos['y_true'])
                 )
 
             self.index = {'train': None, 'oos': None}
-            self.index['train'], self.index['oos'] = train_test_split(np.arange(size_of_train + size_of_oos),
-                                                                      test_size=size_of_oos,
+            self.index['train'], self.index['oos'] = train_test_split(np.arange(size_train + size_oos),
+                                                                      test_size=size_oos,
                                                                       random_state=seed,
                                                                       shuffle=True,
                                                                       stratify=target_for_stratify)
+        else:
+            raise ValueError(f'"gen_method": {gen_method} is not implemented')
 
     @property
-    def train(self):  # , seed=42, gen_method='bootstrap'):  # initial=False):
-        if self.source_state or self.bootstrap:
+    def train(self):
+        if self.source_state or (self._gen_method == 'bootstrap'):
             return self.source_train
 
         result = {}
         for key in self.source_train:
-            concated = self._concat(
-                self.source_train[key], self.source_oos[key])
-            result[key] = self._get_index(concated, self.index["train"])
+            concated = concat(
+                (self.source_train[key], self.source_oos[key]))
+            result[key] = get_index(concated, self.index["train"])
         return result
 
     @property
@@ -101,15 +87,15 @@ class BinarySampler(BaseSampler):
             return self.source_oos
 
         result = {}
-        if self.bootstrap:
+        if (self._gen_method == 'bootstrap'):
             for key in self.source_oos:
-                result[key] = self._get_index(
+                result[key] = get_index(
                     self.source_oos[key], self.index['oos'])
-        else:
+        elif (self._gen_method == 'resampling'):
             for key in self.source_train:
-                concated = self._concat(
-                    self.source_train[key], self.source_oos[key])
-                result[key] = self._get_index(concated, self.index["oos"])
+                concated = concat(
+                    (self.source_train[key], self.source_oos[key]))
+                result[key] = get_index(concated, self.index["oos"])
         return result
 
     @property

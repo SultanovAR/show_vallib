@@ -1,14 +1,14 @@
 import pandas as pd
-from sbe_vallib.validation.sampler import BinarySampler
+from sbe_vallib.validation.sampler import SupervisedSampler
 
 
-def test_ci(model, sampler: BinarySampler, scorer, n_iter=200, use_predict_proba=True, **kwargs):
+def test_ci(model, sampler: SupervisedSampler, scorer, n_iter=200, use_predict_proba=True, **kwargs):
     metrics = []
     for i in range(n_iter):
-        sampler.set_seed(i)  # , split='bootstrap') # обсудить
+        sampler.set_state(seed=i, gen_method='bootstrap')
         train = sampler.train
         oos = sampler.oos
-        if not sampler.bootstrap:
+        if sampler._gen_method != 'bootstrap':
             model.fit(X=train["X"], y=train["y_true"])
         if use_predict_proba:
             y_pred = model.predict_proba(oos['X'])
