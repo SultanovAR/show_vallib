@@ -47,6 +47,8 @@ class Quantization(BaseEstimator, TransformerMixin):
 
         for i, col in enumerate(range(data.shape[1])):
             self.bins[col] = self.merging_binning(data[:, i])
+            # edges = physt.histogram(data[:, i], 'knuth').edges
+            # self.bins[col] = np.concatenate([[-np.inf], edges, [np.inf]])
         return self
 
     def transform(self, data: Union[np.ndarray, pd.DataFrame]):

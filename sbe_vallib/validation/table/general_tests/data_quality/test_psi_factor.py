@@ -75,7 +75,7 @@ def test_factor_psi(sampler,
                     rounding_precision_bins: int = 5,
                     discr_uniq_val: int = 10,
                     discr_val_share: float = 0.8,
-                    threshold: tp.Tuple = (0.1, 0.3), **kwargs):
+                    threshold: tp.Tuple = (0.2, 10**10), **kwargs):
     sampler.reset()
     x_train, x_oos = sampler.train['X'], sampler.oos['X']
 
