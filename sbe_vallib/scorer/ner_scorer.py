@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from nervaluate import Evaluator
 
-from sbe_vallib.validation.scorer.base import BaseScorer
+from sbe_vallib.scorer.base import BaseScorer
 
 
 class NerScorer(BaseScorer):
@@ -26,7 +26,7 @@ class NerScorer(BaseScorer):
                         {tag: ner_metrics_by_tag[tag][schema]['f1']})
         return answer
 
-    def score(self, y_true, y_pred, **kwargs):
+    def calc_metrics(self, y_true, y_pred, **kwargs):
         answer = {}
         for metric_name in self.metrics:
             answer[metric_name] = self.metrics[metric_name]["callable"](

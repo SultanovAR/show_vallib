@@ -1,7 +1,7 @@
 import numpy as np
 
-from sbe_vallib.validation.scorer.base import BaseScorer
-from sbe_vallib.validation.utils.metrics import (
+from sbe_vallib.scorer.base import BaseScorer
+from sbe_vallib.utils.metrics import (
     BINARY_METRICS,
     REGRESSION_METRICS,
     MULTICLASS_METRICS,
@@ -15,7 +15,7 @@ class BinaryScorer(BaseScorer):
         self.cutoff = cutoff
         
 
-    def score(self, y_true, y_proba):
+    def calc_metrics(self, y_true, y_proba):
         answer = {}
         for metric_name in self.metrics:
             if self.metrics[metric_name]["use_probas"]:
@@ -34,7 +34,7 @@ class RegressionScorer(BaseScorer):
     def __init__(self, metrics=REGRESSION_METRICS, custom_scorers={}, **kwargs):
         super().__init__(metrics, custom_scorers, **kwargs)
 
-    def score(self, y_true, y_preds):
+    def calc_metrics(self, y_true, y_preds):
         answer = {}
         for metric_name in self.metrics:
             answer[metric_name] = self.metrics[metric_name]["callable"](
@@ -48,7 +48,7 @@ class MulticlassScorer(BaseScorer):
     def __init__(self, metrics=MULTICLASS_METRICS, custom_scorers=..., **kwargs):
         super().__init__(metrics, custom_scorers, **kwargs)
 
-    def score(self, y_true, y_preds):
+    def calc_metrics(self, y_true, y_preds):
         answer = {}
         for metric_name in self.metrics:
             answer[metric_name] = self.metrics[metric_name]["callable"](

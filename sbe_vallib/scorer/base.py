@@ -21,5 +21,5 @@ class BaseScorer(ABC):
     #     raise NotImplementedError
 
     @abstractmethod
-    def score(self, *args, **kwargs):
+    def calc_metrics(self, *args, **kwargs):
         raise NotImplementedError

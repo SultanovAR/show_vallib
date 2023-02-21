@@ -3,7 +3,7 @@ import typing as tp
 import pandas as pd
 import numpy as np
 
-from sbe_vallib.validation.utils.report_sberds import semaphore_by_threshold
+from sbe_vallib.utils.report_sberds import semaphore_by_threshold
 
 
 def aggregate_semaphore_key_metric(metric_avg: float, semaphores: tp.List[str],

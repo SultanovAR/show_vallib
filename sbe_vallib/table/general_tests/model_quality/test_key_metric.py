@@ -1,5 +1,5 @@
 import pandas as pd
-from sbe_vallib.validation.sampler import SupervisedSampler
+from sbe_vallib.sampler import SupervisedSampler
 
 
 def test_ci(model, sampler: SupervisedSampler, scorer, n_iter=200, use_predict_proba=True, **kwargs):

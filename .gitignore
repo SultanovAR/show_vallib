@@ -3,3 +3,4 @@ oos_data.pkl
 train_data.pkl
 # examples/yolo_test/*
 # !examples/yolo_test/test_yolo.ipynb
+examples/yolo_test/preds/*

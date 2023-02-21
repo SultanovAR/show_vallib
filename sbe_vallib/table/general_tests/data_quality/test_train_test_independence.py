@@ -5,7 +5,7 @@ import pandas as pd
 import sys
 import os
 
-from sbe_vallib.validation.utility import make_test_report
+from sbe_vallib.utility import make_test_report
 
 
 def train_test_independence_test(train,

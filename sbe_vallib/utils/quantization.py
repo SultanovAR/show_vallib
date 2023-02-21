@@ -7,7 +7,7 @@ from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_array
 import physt
 
-import sbe_vallib.validation.utils.pd_np_interface as interface
+import sbe_vallib.utils.pd_np_interface as interface
 
 
 class Quantization(BaseEstimator, TransformerMixin):
