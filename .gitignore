@@ -1,5 +1,5 @@
-#install
-*egg-info/
+sbe_vallib.egg-info/*
+examples/yolo_test/preds/*
 
 
 # Editors

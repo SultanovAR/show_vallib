@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
-# from sbe_vallib.metrics import METRICS
-from sklearn.metrics import f1_score
 
 
 class BaseScorer(ABC):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         pass
         # , metrics: dict, custom_metrics={}, **kwargs):
         # self.metrics = metrics

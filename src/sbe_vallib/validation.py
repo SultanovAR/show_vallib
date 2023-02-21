@@ -8,7 +8,7 @@ class Validation:
         model,
         sampler,
         scorer,
-        pipeline="sbe_vallib/validation/table/pipelines/Config_31.xlsx",
+        pipeline="sbe_vallib/table/pipelines/Config_31.xlsx",
         exclude_tests=[],
         custom_tests={},
     ):

@@ -9,7 +9,9 @@ from sbe_vallib.scorer.base import BaseScorer
 class NerScorer(BaseScorer):
     def __init__(self, metrics: tp.Dict,
                  custom_metrics={}):
-        super().__init__(metrics, custom_metrics)
+        super().__init__()
+        self.metrics = metrics
+        self.metrics.update(custom_metrics)
 
     def ner_metrics(self, y_true, y_pred, model, **kwargs):
         answer = defaultdict(dict)

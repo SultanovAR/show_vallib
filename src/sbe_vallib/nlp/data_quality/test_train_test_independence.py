@@ -8,14 +8,15 @@ from matplotlib import pyplot as plt
 # from lightgbm import LGBMClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.metrics import roc_auc_score, make_scorer
-from sbe_vallib.validation.utils import concat, get_index
+from sbe_vallib.utils.pd_np_interface import concat, get_index
 
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-gini_scorer = make_scorer(lambda x, y: -1 + 2 * roc_auc_score(x, y), needs_proba=True)
+gini_scorer = make_scorer(lambda x, y: -1 + 2 *
+                          roc_auc_score(x, y), needs_proba=True)
 
 RANDOM_STATE = 42
 
@@ -53,11 +54,13 @@ def train_test_independence_test(
                 [
                     get_index(
                         sampler.train["X"],
-                        generator.integers(0, size_of_train, int(size_of_train * frac)),
+                        generator.integers(
+                            0, size_of_train, int(size_of_train * frac)),
                     ),
                     get_index(
                         sampler.oos["X"],
-                        generator.integers(0, size_of_oos, int(size_of_oos * frac)),
+                        generator.integers(
+                            0, size_of_oos, int(size_of_oos * frac)),
                     ),
                 ]
             )
@@ -66,9 +69,10 @@ def train_test_independence_test(
 
     else:
         X_full = concat([sampler.train["X"], sampler.oos["X"]])
-        y_full = pd.Series(np.zeros(len(sampler.train["X"]) + len(sampler.oos["X"])))
-        y_full[len(sampler.train["X"]) :] = 1
-        
+        y_full = pd.Series(
+            np.zeros(len(sampler.train["X"]) + len(sampler.oos["X"])))
+        y_full[len(sampler.train["X"]):] = 1
+
     gini_fact, gini_random_list = calculate_train_test_independence(
         X_full, y_full, n_splits, n_iter
     )
@@ -77,7 +81,8 @@ def train_test_independence_test(
     gini_quantile = min(
         sum(gini_random_list <= gini_fact) / (len(gini_random_list) - 1), 1
     )
-    result_color = "Grey"  # get_independence_result_color(gini_quantile, thresholds)
+    # get_independence_result_color(gini_quantile, thresholds)
+    result_color = "Grey"
 
     result = {
         "Фактический gini": gini_fact,
@@ -102,7 +107,8 @@ def calculate_train_test_independence(X_full, y_full, n_splits, n_iter):
 
     print(X_full.shape)
 
-    kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=RANDOM_STATE)
+    kfold = StratifiedKFold(
+        n_splits=n_splits, shuffle=True, random_state=RANDOM_STATE)
 
     gini_fact = cross_val_score(
         model, X_full, y_full, cv=kfold, scoring=gini_scorer
@@ -112,7 +118,8 @@ def calculate_train_test_independence(X_full, y_full, n_splits, n_iter):
     for i in tqdm(range(n_iter)):
 
         y_full_shuffled = y_full.sample(frac=1, replace=False, random_state=i)
-        kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=i)
+        kfold = StratifiedKFold(
+            n_splits=n_splits, shuffle=True, random_state=i)
 
         gini_iter = cross_val_score(
             model, X_full, y_full_shuffled, cv=kfold, scoring=gini_scorer
