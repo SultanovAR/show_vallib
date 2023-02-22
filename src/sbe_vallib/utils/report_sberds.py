@@ -22,3 +22,12 @@ def worst_semaphore(semaphores):
 
     worst_value = min([semaphore_to_value[i] for i in semaphores])
     return value_to_semaphore[worst_value]
+
+
+def best_semaphore(semaphores):
+    value_to_semaphore = {0: 'red', 1: 'yellow', 2: 'green', 3: 'grey'}
+    semaphore_to_value = {
+        value_to_semaphore[key]: key for key in value_to_semaphore}
+
+    worst_value = max([semaphore_to_value[i] for i in semaphores])
+    return value_to_semaphore[worst_value]

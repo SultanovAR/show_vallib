@@ -12,12 +12,18 @@ from sbe_vallib.utils.metrics import (
 
 class BinaryScorer(BaseScorer):
     def __init__(self, metrics=BINARY_METRICS, cutoff=0.5, custom_metrics={}, **kwargs):
-        super().__init__(metrics, custom_metrics, **kwargs)
+        super().__init__(**kwargs)
         self.metrics = metrics
         self.metrics.update(custom_metrics)
         self.cutoff = cutoff
 
-    def calc_metrics(self, y_true, y_proba):
+    def calc_metrics(self, y_true=None, y_proba=None, *,
+                     model=None, sampler=None, data_type='oos', **kwargs):
+        if y_proba is None:
+            y_proba = model.predict(sampler.getattr(data_type)['X'])
+        if y_true is None:
+            y_true = sampler.getattr(data_type)['X']
+
         answer = {}
         for metric_name in self.metrics:
             if self.metrics[metric_name]["use_probas"]:

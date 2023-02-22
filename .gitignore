@@ -1,5 +1,6 @@
 sbe_vallib.egg-info/*
 examples/yolo_test/preds/*
+*.db
 
 
 # Editors
