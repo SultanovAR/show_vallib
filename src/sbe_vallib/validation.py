@@ -5,6 +5,7 @@ import shelve
 import pandas as pd
 
 from sbe_vallib.parser import parse_pipeline, get_callable_from_path
+from sbe_vallib.utils.fsdict import FSDict
 
 
 class Validation:
@@ -46,36 +47,37 @@ class Validation:
 
     def _create_store_dir(self):
         store_dir = os.path.join(
-            self._store_path_prefix, datetime.datetime.now().strftime('%H:%M:%S_%d-%m-%Y'))
-        os.makedirs(store_dir)
+            self._store_path_prefix, datetime.datetime.now().strftime('%H_%M_%d,%m,%Y'))
+        os.makedirs(store_dir, exist_ok=True)
         return store_dir
 
     def validate(self):
         tests_result = dict()
         store_dir = self._create_store_dir()
-        with shelve.open(os.join(store_dir, 'db_precompute')) as db_precomputed:
-            for test_name in self.pipeline["tests"]:
-                if "import_path" in self.pipeline["tests"][test_name]:
-                    test_function = get_callable_from_path(
-                        self.pipeline["tests"][test_name]["import_path"]
-                    )
-                else:
-                    test_function = self.pipeline["tests"][test_name]["callable"]
-                test_params = self.pipeline["tests"][test_name].get("params", {})
-                tests_result[test_name] = test_function(
-                    model=self.model,
-                    sampler=self.sampler,
-                    scorer=self.scorer,
-                    precomputed=db_precomputed,
-                    **test_params
+        precomputed = FSDict(os.path.join(
+            store_dir, 'precomputes'), compress=0)
+        for test_name in self.pipeline["tests"]:
+            if "import_path" in self.pipeline["tests"][test_name]:
+                test_function = get_callable_from_path(
+                    self.pipeline["tests"][test_name]["import_path"]
                 )
-    
-        self.result_of_validation = tests_result
+            else:
+                test_function = self.pipeline["tests"][test_name]["callable"]
+            test_params = self.pipeline["tests"][test_name].get(
+                "params", {})
+            tests_result[test_name] = test_function(
+                model=self.model,
+                sampler=self.sampler,
+                scorer=self.scorer,
+                precomputed=precomputed,
+                **test_params
+            )
 
-        return tests_result
+        result_of_validation = self.aggregate_results(tests_result)
+        return result_of_validation
 
     def _parse_pipeline(self, path_to_pipeline):
         return parse_pipeline(path_to_pipeline)
 
-    def aggregate_results(self):
-        pass
+    def aggregate_results(self, tests_result):
+        return tests_result

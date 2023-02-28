@@ -2,7 +2,7 @@ import typing as tp
 
 import pandas as pd
 
-from sbe_vallib.table.model_quality.test_key_metric import get_metrics
+from sbe_vallib.table.model_quality.test_key_metric import get_source_metrics
 from sbe_vallib.utils.report_sberds import semaphore_by_threshold, best_semaphore
 
 
@@ -22,12 +22,12 @@ def report_test_key_metric_stability(metrics_oos, metrics_oot,
         rel_reduction, rel_thresholds, greater_is_better=False)
     semaphore = best_semaphore([abs_semaphore, rel_semaphore])
 
-    df_res = pd.DataFrame({
+    df_res = pd.DataFrame([{
         f'Значение {metric_name} на выборке out-of-sample': metrics_oos[metric_name],
         f'Значение {metric_name} на выборке out-of-time': metrics_oot[metric_name],
         f'Изменение {metric_name}, абс-ое': abs_reduction,
         f'Изменение {metric_name}, отн-он': rel_reduction,
-    })
+    }])
 
     return {
         'semaphore': semaphore,
@@ -47,13 +47,15 @@ def test_key_metric_stability(model, sampler, scorer,
         if 'metrics_oos' in precomputed:
             metrics_oos = precomputed['metrics_oos']
         else:
-            metrics_oos = get_metrics(model, sampler, scorer, data_type='oos')
+            metrics_oos = get_source_metrics(
+                model=model, sampler=sampler, scorer=scorer, data_type='oos')
             precomputed['metrics_oos'] = metrics_oos
 
         if 'metrics_oot' in precomputed:
             metrics_oot = precomputed['metrics_oot']
         else:
-            metrics_oot = get_metrics(model, sampler, scorer, data_type='oot')
+            metrics_oot = get_source_metrics(
+                model=model, sampler=sampler, scorer=scorer, data_type='oot')
             precomputed['metrics_oot'] = metrics_oot
 
     res = report_test_key_metric_stability(
