@@ -11,7 +11,7 @@ def get_source_metrics(model, sampler, scorer, data_type='oos'):
     if 'y_pred' not in data:
         data['y_pred'] = model.predict(data['X'])
     metrics = scorer.calc_metrics(
-        y_true=data['y_true'], y_proba=data['y_pred'], model=model, sampler=sampler, data_type=data_type)
+        model=model, sampler=sampler, data_type=data_type, use_preds_from_sampler=True)
     return metrics
 
 

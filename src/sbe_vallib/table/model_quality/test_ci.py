@@ -1,4 +1,5 @@
 from collections import defaultdict
+from copy import deepcopy
 
 import pandas as pd
 import numpy as np
@@ -124,21 +125,25 @@ def test_ci(model, sampler, scorer,
             sampler.oos['y_pred'] = model.predict(sampler.oos['X'])
         if 'y_pred' not in sampler.train:
             sampler.train['y_pred'] = model.predict(sampler.train['X'])
+        model_ci = model
+        use_preds_from_sampler = True
+    else:
+        use_preds_from_sampler = False
+        model_ci = deepcopy(model)
 
     metric_stat = defaultdict(list)
     for i in range(n_iter):
         sampler.set_state(seed=i, gen_method=gen_method, stratify=True)
-        if sampler._gen_method == 'bootstrap':
-            train_metrics = scorer.calc_metrics(
-                y_true=sampler.train['y_true'], y_proba=sampler.train['y_pred'])
-            oos_metrics = scorer.calc_metrics(
-                y_true=sampler.oos['y_true'], y_proba=sampler.oos['y_pred'])
-        else:
-            model.fit(X=sampler.train["X"], y=sampler.train["y_true"])
-            train_metrics = scorer.calc_metrics(
-                model=model, sampler=sampler, data_type='train')
-            oos_metrics = scorer.calc_metrics(
-                model=model, sampler=sampler, data_type='oos')
+        if sampler._gen_method != 'bootstrap':
+            model_ci.fit(X=sampler.train["X"], y=sampler.train["y_true"])
+        train_metrics = scorer.calc_metrics(model=model_ci,
+                                            sampler=sampler,
+                                            data_type='train',
+                                            use_preds_from_sampler=use_preds_from_sampler)
+        oos_metrics = scorer.calc_metrics(model=model_ci,
+                                          sampler=sampler,
+                                          data_type='oos',
+                                          use_preds_from_sampler=use_preds_from_sampler)
         metric_stat['train'].append(train_metrics[metric_name])
         metric_stat['oos'].append(oos_metrics[metric_name])
 

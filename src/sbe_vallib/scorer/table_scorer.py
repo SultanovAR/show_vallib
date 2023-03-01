@@ -17,12 +17,12 @@ class BinaryScorer(BaseScorer):
         self.metrics.update(custom_metrics)
         self.cutoff = cutoff
 
-    def calc_metrics(self, y_true=None, y_proba=None,
-                     model=None, sampler=None, data_type=None, **kwargs):
-        if y_proba is None:
+    def calc_metrics(self, model=None, sampler=None, data_type=None, use_preds_from_sampler: bool = True, **kwargs):
+        y_true = getattr(sampler, data_type)['y_true']
+        if use_preds_from_sampler:
+            y_proba = getattr(sampler, data_type)['y_pred']
+        else:
             y_proba = model.predict_proba(getattr(sampler, data_type)['X'])
-        if y_true is None:
-            y_true = getattr(sampler, data_type)['y_true']
 
         answer = {}
         for metric_name in self.metrics:

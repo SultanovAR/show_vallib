@@ -50,7 +50,7 @@ class SupervisedSampler(BaseSampler):
 
         if gen_method == 'bootstrap':
             self.index = {
-                "train": None,
+                "train": generator.integers(0, size_train, size_train),
                 "oos": generator.integers(0, size_oos, size_oos),
             }
         elif gen_method == 'resampling':
@@ -69,7 +69,7 @@ class SupervisedSampler(BaseSampler):
         else:
             raise ValueError(f'"gen_method": {gen_method} is not implemented')
 
-    def _get_data_by_gen_method(self, data: dict):
+    def _get_data_by_gen_method(self, data: dict, data_type: str):
         if self.source_state:
             return data
 
@@ -77,21 +77,21 @@ class SupervisedSampler(BaseSampler):
         if (self._gen_method == 'bootstrap'):
             for key in data:
                 result[key] = get_index(
-                    data[key], self.index['oos'])
+                    data[key], self.index[data_type])
         elif (self._gen_method == 'resampling'):
             for key in self.source_train:
                 concated = concat(
                     (self.source_train[key], self.source_oos[key]))
-                result[key] = get_index(concated, self.index["oos"])
+                result[key] = get_index(concated, self.index[data_type])
         return result
 
     @property
     def train(self):
-        return self._get_data_by_gen_method(self.source_train)
+        return self._get_data_by_gen_method(self.source_train, 'train')
 
     @property
     def oos(self):
-        return self._get_data_by_gen_method(self.source_oos)
+        return self._get_data_by_gen_method(self.source_oos, 'oos')
 
     @property
     def oot(self):
