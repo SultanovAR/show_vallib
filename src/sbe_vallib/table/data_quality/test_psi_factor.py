@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from sbe_vallib.sampler import SupervisedSampler
 from sbe_vallib.utils import pd_np_interface as interface
 from sbe_vallib.utils.quantization import Quantization
-from sbe_vallib.utils.report_sberds import semaphore_by_threshold, worst_semaphore
+from sbe_vallib.utils.report_helper import semaphore_by_threshold, worst_semaphore
 
 
 def psi(train, oos, base=None, axis=0):

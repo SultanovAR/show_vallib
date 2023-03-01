@@ -2,7 +2,7 @@ import typing as tp
 
 import pandas as pd
 
-from sbe_vallib.utils.report_sberds import semaphore_by_threshold
+from sbe_vallib.utils.report_helper import semaphore_by_threshold
 
 
 def get_source_metrics(model, sampler, scorer, data_type='oos'):

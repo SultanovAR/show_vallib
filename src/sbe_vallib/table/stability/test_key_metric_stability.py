@@ -3,7 +3,7 @@ import typing as tp
 import pandas as pd
 
 from sbe_vallib.table.model_quality.test_key_metric import get_source_metrics
-from sbe_vallib.utils.report_sberds import semaphore_by_threshold, best_semaphore
+from sbe_vallib.utils.report_helper import semaphore_by_threshold, best_semaphore
 
 
 def report_test_key_metric_stability(metrics_oos, metrics_oot,
