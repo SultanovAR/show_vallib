@@ -1,6 +1,7 @@
 import os
 import datetime
 import shelve
+import traceback
 
 import pandas as pd
 
@@ -57,21 +58,30 @@ class Validation:
         precomputed = FSDict(os.path.join(
             store_dir, 'precomputes'), compress=0)
         for test_name in self.pipeline["tests"]:
-            if "import_path" in self.pipeline["tests"][test_name]:
-                test_function = get_callable_from_path(
-                    self.pipeline["tests"][test_name]["import_path"]
+            try:
+                if "import_path" in self.pipeline["tests"][test_name]:
+                    test_function = get_callable_from_path(
+                        self.pipeline["tests"][test_name]["import_path"]
+                    )
+                else:
+                    test_function = self.pipeline["tests"][test_name]["callable"]
+                test_params = self.pipeline["tests"][test_name].get(
+                    "params", {})
+                tests_result[test_name] = test_function(
+                    model=self.model,
+                    sampler=self.sampler,
+                    scorer=self.scorer,
+                    precomputed=precomputed,
+                    **test_params
                 )
-            else:
-                test_function = self.pipeline["tests"][test_name]["callable"]
-            test_params = self.pipeline["tests"][test_name].get(
-                "params", {})
-            tests_result[test_name] = test_function(
-                model=self.model,
-                sampler=self.sampler,
-                scorer=self.scorer,
-                precomputed=precomputed,
-                **test_params
-            )
+            except Exception as e:
+                tests_result[test_name] = {
+                    'semaphore': traceback.format_exc(),
+                    'result_dict': None,
+                    'result_dataframes': [],
+                    'result_plots': []
+                }
+                print(tests_result[test_name]['semaphore'])
 
         result_of_validation = self.aggregate_results(tests_result)
         return result_of_validation

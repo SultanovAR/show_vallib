@@ -9,7 +9,7 @@ def get_source_metrics(model, sampler, scorer, data_type='oos'):
     sampler.reset()
     data = getattr(sampler, data_type)
     if 'y_pred' not in data:
-        data['y_pred'] = model.predict(data['X'])
+        data['y_pred'] = model.predict_proba(data['X'])
     metrics = scorer.calc_metrics(
         model=model, sampler=sampler, data_type=data_type, use_preds_from_sampler=True)
     return metrics

@@ -4,9 +4,9 @@ from importlib import import_module
 
 
 def get_callable_from_path(path: str) -> callable:
-
     ".".join(path.split(".")[:-1])
-    func = getattr(import_module(".".join(path.split(".")[:-1])), path.split(".")[-1])
+    func = getattr(import_module(
+        ".".join(path.split(".")[:-1])), path.split(".")[-1])
 
     return func
 
@@ -14,9 +14,11 @@ def get_callable_from_path(path: str) -> callable:
 def parse_pipeline(path_to_xlsx: str):
 
     full_pipeline_df = pd.read_excel(path_to_xlsx, sheet_name="tests_config")
-    agg_config = pd.read_excel(path_to_xlsx, sheet_name="agg_config")
+    agg_config = pd.read_excel(
+        path_to_xlsx, sheet_name="agg_config").set_index('block_key').to_dict('index')
 
-    code_columns = ["test_key", "import_path", "block_key", "params", "informative"]
+    code_columns = ["test_key", "import_path",
+                    "block_key", "params", "informative"]
     excel_columns = [
         "test_key",
         "Название блока",

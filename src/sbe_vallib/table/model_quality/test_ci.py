@@ -122,9 +122,9 @@ def test_ci(model, sampler, scorer,
     if gen_method == 'bootstrap':  # when we apply a bootstrap version a model doesn't refit
         sampler.reset()
         if 'y_pred' not in sampler.oos:
-            sampler.oos['y_pred'] = model.predict(sampler.oos['X'])
+            sampler.oos['y_pred'] = model.predict_proba(sampler.oos['X'])
         if 'y_pred' not in sampler.train:
-            sampler.train['y_pred'] = model.predict(sampler.train['X'])
+            sampler.train['y_pred'] = model.predict_proba(sampler.train['X'])
         model_ci = model
         use_preds_from_sampler = True
     else:
