@@ -1,91 +1,132 @@
-# Содержание
 
-1. [Установка](#installation)
-2. [Введение](#introduction)
-3. [Как запустить](#run)
-4. [Как написать sampler](#writesampler)
-    1. [Table](#writesampler_table)
-    2. [NLP](#writesampler_nlp)
-    3. [CV](#writesampler_cv)
-    4. [TimeSeries](#writesampler_ts)
-5. [Как написать scorer](#writescorer)
-    1. [Table](#writescorer_table)
-    2. [NLP](#writescorer_nlp)
-    3. [CV](#writescorer_cv)
-    4. [TimeSeries](#writescorer_ts)
-6. [Как написать model wrapper](#writewrapper)
-    1. [Table](#writewrapper_table)
-    2. [NLP](#writewrapper_nlp)
-    3. [CV](#writewrapper_cv)
-    4. [TimeSeries](#writewrapper_ts)
-7. [Как написать тест](#writetest)
-8. [Как написать pipeline](#writepipeline)
-    1. [Pipeline в виде excel файла](#writepipeline_excel)
-    2. [Pipeline в виде JSON](#writepipeline_json)
-5. [Поясняем за utils](#utils)
-    1. [fsdict.py](#fsdict)
-    2. [image.py](#image)
-    3. [metrics.py](#metrics)
-    4. [pd_np_interface.py](#pd_np_interface)
-    5. [quantization.py](#quantization)
-    6. [report_helper.py](#report_helper)
+- [Установка](#установка)
+- [Введение](#введение)
+- [Как запустить](#как-запустить)
+- [Как написать sampler](#как-написать-sampler)
+  - [Table](#table)
+  - [NLP](#nlp)
+  - [CV](#cv)
+  - [TimeSeries](#timeseries)
+- [Как написать scorer](#как-написать-scorer)
+  - [Table](#table-1)
+  - [NLP](#nlp-1)
+  - [CV](#cv-1)
+  - [TimeSeries](#timeseries-1)
+- [Как написать model wrapper](#как-написать-model-wrapper)
+  - [Table](#table-2)
+  - [NLP](#nlp-2)
+  - [CV](#cv-2)
+  - [TimeSeries](#timeseries-2)
+- [Как написать test](#как-написать-test)
+- [Как написать pipeline](#как-написать-pipeline)
+  - [Pipeline в виде excel файла](#pipeline-в-виде-excel-файла)
+  - [Pipeline в виде JSON](#pipeline-в-виде-json)
+- [Поясняем за utils](#поясняем-за-utils)
+  - [fsdict.py](#fsdictpy)
+  - [image.py](#imagepy)
+  - [metrics.py](#metricspy)
+  - [pd\_np\_interface.py](#pd_np_interfacepy)
+  - [quantization.py](#quantizationpy)
+  - [report\_helper.py](#report_helperpy)
 
-## Установка <a name="installation"></a>
 
-Там где находится setup.py (там же README.md) выполнить команду ```pip install -e .``` это установит библиотеку в editable mode
 
-## Введение <a name="introduction"></a>
+## Установка 
 
-## Как запустить <a name="run"></a>
+    Там где находится setup.py (там же README.md) выполнить команду ```pip install -e .``` это установит библиотеку в editable mode
 
-## Как написать sampler <a name="writesampler"></a>
+## Введение 
 
-### Table <a name="writesampler_table"></a>
+Этот readme поможет сделать первые шаги в освоении библиотеки, но конечно все описать невозможно и просто прочтение кода ничего не заменит (мы старались сделать его удобночитаемым).
 
-### NLP <a name="writesampler_nlp"></a>
+Библиотека базируется на 6 абстракциях: ```Sampler, Scorer, Model, Test, Pipeline, Validation```.
 
-### CV <a name="writesampler_cv"></a>
+    Sampler - обертка над данными, также он берет на себя функцию ресамплинга данных(bootstraping, time-backtracking)
 
-### TimeSeries <a name="writesampler_ts"></a>
+    Model - очевидно, что это. Обертки иногда надо будет писать
 
-## Как написать scorer <a name="writescorer"></a>
+    Scorer - объект, который считает метрики, если в него подать Sampler(данные) и Model
 
-### Table <a name="writescorer_table"></a>
+    Test - функция которая принимает model, scorer, sampler и выдает результат в определенном формате
 
-### NLP <a name="writescorer_nlp"></a>
+    Pipeline - отображение методики в нашей бибилиотеке: содержит список тестов, параметры, интерпретации и другое. Это может быть записано в excel формате или же в JSON.
 
-### CV <a name="writescorer_cv"></a>
+    Validation - запускает все тесты из Pipeline затем формирует отчет
 
-### TimeSeries <a name="writescorer_ts"></a>
+Подробнее что делает каждая абстракция и с какой целью можно увидеть в презентации ```./presentation/presentation.ipynb```
 
-## Как написать model wrapper <a name="writewrapper"></a>
 
-### Table <a name="writewrapper_table"></a>
+## Как запустить 
 
-### NLP <a name="writewrapper_nlp"></a>
+- Выбрать Sampler тут ```sbe_vallib.sampler```, если там вам ничего не подходит надо написать самому
+- Выбрать Scorer тут ```sbe_vallib.scorer```, если там вам ничего не подходит надо написать самому
+- В секции 'как написать Model Wrapper' посмотреть какой интерфейс должен быть в модели (У table, cv, nlp моделей они разные). Написать Wrapper, если у вашей модели другой интерфейс.
+- Выбрать Pipeline из готовых ```sbe_vallib.table.pipelines```, ```sbe_vallib.cv.pipelines```, ```sbe_vallib.nlp.pipelines```. Или же написать свой в excel или JSON формате.
+- Закинуть это все в Validation и получить готовую валидацию :)
 
-### CV <a name="writewrapper_cv"></a>
+Примеры использования библиотеки для самых различных случаев есть в ```./examples/```
 
-### TimeSeries <a name="writewrapper_ts"></a>
+## Как написать sampler 
 
-## Как написать test <a name="writetest"></a>
+### Table 
 
-## Как написать pipeline <a name="writepipeline"></a>
+### NLP 
 
-### Pipeline в виде excel файла <a name="writepipeline_excel"></a>
+### CV 
 
-### Pipeline в виде JSON <a name="writepipeline_json"></a>
+### TimeSeries 
 
-## Поясняем за utils <a name="utils"></a>
+## Как написать scorer 
 
-### fsdict.py <a name="fsdict"></a>
+### Table 
 
-### image.py <a name="image"></a>
+### NLP 
 
-### metrics.py <a name="metrics"></a>
+### CV 
 
-### pd_np_interface.py <a name="pd_np_interface"></a>
+### TimeSeries 
 
-### quantization.py <a name="quantization"></a>
-### report_helper.py <a name="report_helper"></a>
+## Как написать model wrapper 
+
+### Table 
+
+### NLP 
+
+### CV 
+
+### TimeSeries 
+
+## Как написать test 
+
+## Как написать pipeline 
+
+### Pipeline в виде excel файла 
+
+### Pipeline в виде JSON 
+
+## Поясняем за utils 
+
+### fsdict.py 
+
+    Имплементация dict, которая хранит все в файловой системе, а не в оперативке. В библиотеке используется для передачи объектов между тестами (precomputed).
+
+### image.py 
+
+    Помощь в работе с изображениями. Например перевод из matplotlib figure в PIL.image.
+
+### metrics.py 
+
+    Словари с типичными метриками для разных задач.
+
+### pd_np_interface.py 
+
+    За частую у нас вход идет либо np.array, либо pd.DataFrame, либо python объекты.
+    У каждого из них свои методы для concat, взятия i-го столбца и тд. Тут собраны функции, которые создают единый интерфейс для работы с этими объектами. Реализованы concat, get_index, get_columns, set_column, all_columns и быть может что-то еще.
+
+### quantization.py
+
+    Класс для квантизации/бининга (непрерывный признак разбить на бины)
+### report_helper.py 
+
+    Вспомогательные функции для выставления светофоров и формирования выходного словаря у теста.
 
