@@ -18,6 +18,8 @@
   - [CV](#cv-2)
   - [TimeSeries](#timeseries-2)
 - [Как написать test](#как-написать-test)
+  - [Пример с выводом картинки](#пример-с-выводом-картинки)
+  - [Пример работы с precomputed](#пример-работы-с-precomputed)
 - [Как написать pipeline](#как-написать-pipeline)
   - [Pipeline в виде excel файла](#pipeline-в-виде-excel-файла)
   - [Pipeline в виде JSON](#pipeline-в-виде-json)
@@ -68,41 +70,149 @@
 
 ## Как написать sampler 
 
+Необходимо отнаследоваться от ```sbe_vallib.sampler.base.BaseSampler``` и переопределить методы на ваш лад (не забудьте про self.source_state). В качестве примера, можно посмотреть на ```sbe_vallib.sampler.supervised_sampler.SupervisedSampler```, это sampler, подходящий Sampler, когда обучающая выборка это строки вида ```(x, y)```.
+
 ### Table 
+
+Пока пусто
 
 ### NLP 
 
+Считаем, что вход модели это текст. Значит Sampler должен выдавать список текстов.
+
 ### CV 
 
+Считаем, что Sampler хранить пути до картинок, которые будут подаваться на вход модели.
+
 ### TimeSeries 
+
+Пока пусто
 
 ## Как написать scorer 
 
+Необходимо отнаследоваться от ```sbe_vallib.scorer.base.BaseScorer``` и переопределить метод ```calc_metrics```, в который будут передаваться model, sampler и что-то еще (зависит от тестов). Для примера можно посмотреть на реализацию ```sbe_vallib.scorer.table_scorer.BinaryScorer```.
+
+Выход ```cal_metrics``` должен иметь следующий вид:
+
+```python
+  {'metric_name_1': value_1, 'metric_name_2': value_2}
+```
+
+или в случае мультиклассовой классификации (table, nlp, cv - не важно)
+
+```python
+{'metric_name_1':
+  {'class_1': value_11,
+   'class_2': value_12},
+ 'metric_name_2':
+  {'class_1': value_21,
+   'class_2': value_22},}
+```
+
 ### Table 
+
+В table тестах в ```calc_metrics``` также передается флаг ```use_preds_from_sampler``` на его основе решается, брать ли предикты из Sampler по ключу ```'y_pred'``` или же запустить 'честный' предикт модели.
 
 ### NLP 
 
+Если это Scorer для NER задачи то он должен реализовывать подсчет метрик для способов поиска совпадаения: exact, strict, partial, type. Подробнее об этом можно почитать [тут](https://github.com/MantisAI/nervaluate)
+
 ### CV 
+
+Пока пусто
 
 ### TimeSeries 
 
-## Как написать model wrapper 
+Пока пусто
+
+## Как написать model wrapper
+
+Надо бы завести список примеров для wrapper'ов, DreamML wrapper AutoNER Wrapper и т.д.
 
 ### Table 
 
+Все тесты вызывают метод ```predict_proba``` для получения предсказаний
+
 ### NLP 
+
+Все тесты вызывают метод ```predict``` для получения предсказаний
 
 ### CV 
 
+Пока пусто
+
 ### TimeSeries 
+
+Пока пусто
 
 ## Как написать test 
 
+Тест это функция. Она реализует подсчет теста и его оформление(сфетофор, таблица и рисунки). На эту функцию накладываются ограничения на сигнатуру: 
+
+- функция как минимум должна принимать параметры ```model, scorer, sampler, precomputed: dict=None, **kwargs``` 
+- функция должна выдать результат работы в следующем формате (привет SberDS)
+  
+    ```python
+    {
+        "semaphore": str one of {"gray", "green", "yellow", "red"},
+        "result_dict": python object,
+        "result_dataframes": List[pd.DataFrame],
+        "result_plots": List[PIL.Image],
+    }
+    ```
+
+    где,
+    - "semaphore" -- светофор выставленный за тест
+    - "result_dict" -- python object, который валидатор посчитает полезным для дальнейшего использования
+    - "result_dataframes" -- список таблиц, которые будут отражены в агрегированном excel файле
+    - "result_plots" -- список картинок, которые будут отражены в агрегированном excel файле.
+
+- ```sampler``` это единственный источник данных
+- ```precomputed``` это Dict, который служит для обмена предпосчитанными значениями между тестами (зачем 5 раз считать метрику на oos, если можно 1 раз посчитать и записать это значение в dict)
+
+Для единообразия предлагаем писать тесты по этому шаблону:
+
+```python
+def test_name(model, sampler, scorer, additional_param_1, additional_param_1, precomputed=None, **kwargs):
+  #Проверка входных данных
+  if not isinstance(additional_param_1, int):
+    raise ValueError(f'additional_param_1 should be "int" instead of "{type(additional_param_1)}"')
+  
+  #обрабатываем precomputed
+  if precomputed is not None:
+    if 'value' in precomputed:
+      value = precomputed['value']
+    else:
+      value = calc_value(...)
+      precomputed['value'] = value
+
+  #делаем какие-то подсчеты
+  useful_values = calc_useful_values(value, ...)
+
+  #проставляем светоформ, рисуем картинки и делаем таблицы
+  result = report_test_name(useful_values)
+  return result
+```
+
+### Пример с выводом картинки
+
+Можете посмотреть код ```table.model_quality.test_ci.test_ci```
+
+### Пример работы с precomputed
+
+Можете посмотреть код ```table.model_quality.test_ci.test_key_metric```
+
 ## Как написать pipeline 
+
+Пока пусто
 
 ### Pipeline в виде excel файла 
 
+Пока пусто
+
 ### Pipeline в виде JSON 
+
+Пока пусто
 
 ## Поясняем за utils 
 
@@ -126,6 +236,7 @@
 ### quantization.py
 
     Класс для квантизации/бининга (непрерывный признак разбить на бины)
+
 ### report_helper.py 
 
     Вспомогательные функции для выставления светофоров и формирования выходного словаря у теста.
