@@ -103,10 +103,23 @@
 ```python
 {'metric_name_1':
   {'class_1': value_11,
-   'class_2': value_12},
+   'class_2': value_12,
+   'micro': value_micro,
+   'macro': value_macro},
  'metric_name_2':
   {'class_1': value_21,
-   'class_2': value_22},}
+   'class_2': value_22,
+   'micro': value_micro,
+   'macro': value_macro},}
+```
+
+Если в тесте нужно знать размеры классов, то требуем от выхода 'scorer.calc_metrics' дополнительную метрику 'support' то есть в словаре будет запись
+
+```python
+{'support':
+  {'class_1': support_class_1,
+   'class_2': support_class_2}
+}
 ```
 
 ### Table 
