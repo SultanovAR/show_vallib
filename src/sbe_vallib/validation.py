@@ -1,8 +1,7 @@
 import os
 import datetime
-import shelve
 import traceback
-from collections import defaultdict
+import typing as tp
 
 import pandas as pd
 
@@ -13,15 +12,72 @@ from sbe_vallib.utils.fsdict import FSDict
 
 class Validation:
     def __init__(
-        self,
-        model,
-        sampler,
-        scorer,
-        pipeline="sbe_vallib/table/pipelines/Config_31.xlsx",
-        exclude_tests=[],
-        custom_tests={},
-        store_path='./test_results'
-    ):
+            self,
+            model,
+            sampler,
+            scorer,
+            pipeline: tp.Union[os.PathLike, tp.Tuple[dict]
+                               ] = "sbe_vallib/table/pipelines/Config_31.xlsx",
+            exclude_tests: tp.List[str] = [],
+            custom_tests: tp.Dict = {},
+            store_path: os.PathLike = './test_results'):
+        """
+        Validation runs all tests from 'pipeline' and then aggregates results into excel file.
+
+        :param model: the model to be tested, you can find discription in README.md file
+        :param sampler: Generate a sample of the data, you can find discription in README.md file
+        :param scorer: Evaluate the model, you can find discription in README.md file
+        :param pipeline: path to excel file or tp.Tuple[dict] object. About excel file you can read in README.md
+            The format of the tp.Tuple[dict] object is following: (test_desc, agg_config) where
+            tests_desc is a dict with the following format:
+            {
+                'test_key': {
+                    'import_path': test's import path. example:'sbe_vallib.table.general_tests.test_psi_factor'
+                    'block_key': str,
+                    'informative': int 0 or 1
+                    'params': {
+                        'param_1': param_value_1,
+                        ...
+                    }
+                    'Название': tp.Optional[str],
+                    'Цель': tp.Optional[str],
+                    'Интерпретация': tp.Optional[str],
+                    'Границы красный': tp.Optional[str],
+                    'Границы желтый': tp.Optional[str],
+                    'Границы зеленый': tp.Optional[str],
+                    }
+            }
+            agg_config is a dict with the following format:
+            {
+                'block_key': {
+                    'print_name': 'Качество данных',
+                    'func': 'sbe_vallib.utils.report_helper.worst_semaphore'
+                }
+            }
+        :param exclude_tests: Exclude tests from the pipeline
+        :param custom_tests: Add custom tests to the pipeline. It should be dict with the following format:
+            {
+                'test_key': {
+                    'callable': tp.Callable,
+                    'block_key': tp.Optional[str],
+                    'informative': tp.Optional[bool],
+                    'params': {
+                        'param_1': param_value_1,
+                        ...
+                    }
+                }
+            }
+        :param store_path: Specify the path where the results of validation will be stored
+        :return: a dict with the following format:
+            {
+                'test_key': {
+                    "semaphore": str one of {"gray", "green", "yellow", "red"},
+                    "result_dict": python object,
+                    "result_dataframes": List[pd.DataFrame],
+                    "result_plots": List[PIL.Image],
+                }
+            }
+        """
 
         self.model = model
         self.sampler = sampler

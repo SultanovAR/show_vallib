@@ -14,11 +14,35 @@ def get_callable_from_path(path: str) -> callable:
 def parse_pipeline(path_to_xlsx: str):
     """
     The parse_pipeline function reads the pipeline configuration from an Excel file.
-    The function returns two dictionaries: tests_desc and agg_config.
-    tests_desc is a dictionary of test descriptions, where each key is a test name (test_key) and each value is another dictionary with the following keys:
-    
+
     :param path_to_xlsx: str: Specify the path to the excel file with tests and aggregation configuration
-    :return: A dictionary of tests and a dictionary of aggregation blocks
+    :return: 
+        The function returns two dictionaries: tests_desc and agg_config.
+        tests_desc is a dict with the following format:
+            {
+                'test_key': {
+                    'import_path': test's import path. example:'sbe_vallib.table.general_tests.test_psi_factor'
+                    'block_key': str,
+                    'informative': int 0 or 1
+                    'params': {
+                        'param_1': param_value_1,
+                        ...
+                    }
+                    'Название': tp.Optional[str],
+                    'Цель': tp.Optional[str],
+                    'Интерпретация': tp.Optional[str],
+                    'Границы красный': tp.Optional[str],
+                    'Границы желтый': tp.Optional[str],
+                    'Границы зеленый': tp.Optional[str],
+                    }
+            }
+        agg_config is a dict with the following format:
+        {
+            'block_key': {
+                'print_name': 'Качество данных',
+                'func': 'sbe_vallib.utils.report_helper.worst_semaphore'
+            }
+        }
     """
     full_pipeline_df = pd.read_excel(path_to_xlsx, sheet_name="tests_config")
     agg_config = pd.read_excel(

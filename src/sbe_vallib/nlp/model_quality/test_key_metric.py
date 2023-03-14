@@ -58,17 +58,17 @@ def report_key_metric(metrics: tp.Dict, metric_name: str, classes: tp.List[str],
 
 
 def test_key_metric(model, scorer, sampler,
-                    metric_name='precision_score', average='macro', type_data='oos',
-                    thresholds=(0.4, 0.6), min_support=20, **kwargs):  # обсудить с Азатиком
+                    metric_name='precision_score', average='macro', data_type='oos',
+                    thresholds=(0.4, 0.6), min_support=20, use_preds_from_sampler=True, **kwargs):
     sampler.reset()
-    data = getattr(sampler, type_data)
+    data = getattr(sampler, data_type)
     if 'y_pred' not in data:
         data['y_pred'] = model.predict(data['X'])
 
-    metrics = scorer.calc_metrics(y_true=data['y_true'],
-                                  y_pred=data['y_pred'],
-                                  model=model,
-                                  sampler=sampler, **kwargs)
+    metrics = scorer.calc_metrics(model=model,
+                                  sampler=sampler,
+                                  data_type=data_type,
+                                  use_preds_from_sampler=use_preds_from_sampler, ** kwargs)
 
     semaphore, df_report = report_key_metric(
         metrics, metric_name, getattr(model, 'classes_', None), average, min_support, thresholds)
@@ -78,5 +78,3 @@ def test_key_metric(model, scorer, sampler,
         "result_dataframes": [df_report],
         "result_plots": [],
     }
-
-

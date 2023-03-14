@@ -12,16 +12,16 @@ def report_ner_metric(metrics: tp.Dict):
     return 'gray', df_table
 
 
-def test_ner_metric(model, scorer, sampler, type_data='oos', **kwargs):
+def test_ner_metric(model, scorer, sampler, data_type='oos', **kwargs):
     sampler.reset()
-    data = getattr(sampler, type_data)
+    data = getattr(sampler, data_type)
     if 'y_pred' not in data:
         data['y_pred'] = model.predict(data['X'])
 
-    metrics = scorer.ner_metrics(y_true=data['y_true'],
-                                 y_pred=data['y_pred'],
-                                 model=model,
-                                 sampler=sampler, **kwargs)
+    metrics = scorer.ner_metrics(model=model,
+                                 sampler=sampler,
+                                 data_type=data_type,
+                                 use_preds_from_sampler=True, **kwargs)
 
     semaphore, df_report = report_ner_metric(metrics)
     return {

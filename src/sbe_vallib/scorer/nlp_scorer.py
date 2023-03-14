@@ -13,7 +13,14 @@ class NerScorer(BaseScorer):
         self.metrics = metrics
         self.metrics.update(custom_metrics)
 
-    def ner_metrics(self, y_true, y_pred, model, **kwargs):
+    def ner_metrics(self, model=None, sampler=None, data_type=None, use_preds_from_sampler: bool = True, **kwargs):
+        data = getattr(sampler, data_type)
+        y_true = data['y_true']
+        if use_preds_from_sampler and ('y_pred' in data):
+            y_pred = data['y_pred']
+        else:
+            y_pred = model.predict(data['X'])
+
         answer = defaultdict(dict)
         evaluator = Evaluator(y_true, y_pred, model.classes_, loader='list')
         ner_metrics_macro, ner_metrics_by_tag = evaluator.evaluate()
@@ -28,7 +35,14 @@ class NerScorer(BaseScorer):
                         {tag: ner_metrics_by_tag[tag][schema]['f1']})
         return answer
 
-    def calc_metrics(self, y_true, y_pred, **kwargs):
+    def calc_metrics(self, model=None, sampler=None, data_type=None, use_preds_from_sampler: bool = True, **kwargs):
+        data = getattr(sampler, data_type)
+        y_true = data['y_true']
+        if use_preds_from_sampler and ('y_pred' in data):
+            y_pred = data['y_pred']
+        else:
+            y_pred = model.predict(data['X'])
+
         answer = {}
         for metric_name in self.metrics:
             answer[metric_name] = self.metrics[metric_name]["callable"](
