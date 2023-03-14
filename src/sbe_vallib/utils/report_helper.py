@@ -16,7 +16,10 @@ def semaphore_by_threshold(value, threshold, greater_is_better=True):
 
 
 def worst_semaphore(semaphores):
-    value_to_semaphore = {0: 'red', 1: 'yellow', 2: 'green', 3: 'grey'}
+    if (semaphores is None) or (len(semaphores) == 0):
+        return 'gray'
+    value_to_semaphore = {0: 'red', 1: 'yellow',
+                          2: 'green', 3: 'grey', 4: 'gray'}
     semaphore_to_value = {
         value_to_semaphore[key]: key for key in value_to_semaphore}
 
@@ -25,7 +28,10 @@ def worst_semaphore(semaphores):
 
 
 def best_semaphore(semaphores):
-    value_to_semaphore = {0: 'red', 1: 'yellow', 2: 'green', 3: 'grey'}
+    if (semaphores is None) or (len(semaphores) == 0):
+        return 'gray'
+    value_to_semaphore = {0: 'red', 1: 'yellow',
+                          2: 'green', 3: 'grey', 4: 'gray'}
     semaphore_to_value = {
         value_to_semaphore[key]: key for key in value_to_semaphore}
 

@@ -2,10 +2,12 @@ import os
 import datetime
 import shelve
 import traceback
+from collections import defaultdict
 
 import pandas as pd
 
 from sbe_vallib.parser import parse_pipeline, get_callable_from_path
+from sbe_vallib.xlsx_aggregator import Aggregator
 from sbe_vallib.utils.fsdict import FSDict
 
 
@@ -27,20 +29,19 @@ class Validation:
         self._store_path_prefix = store_path
 
         if isinstance(pipeline, str):
-            tests, tests_desc, agg_config = self._parse_pipeline(pipeline)
+            tests_desc, agg_config = self._parse_pipeline(pipeline)
         else:
-            tests, tests_desc, agg_config = pipeline
+            tests_desc, agg_config = pipeline
 
         self.pipeline = {
-            "tests": tests,
             "tests_desc": tests_desc,
             "aggregation_mode_by_block": agg_config,
         }
 
-        self.pipeline["tests"].update(custom_tests)
-        self.pipeline["tests"] = {
-            key: self.pipeline["tests"][key]
-            for key in self.pipeline["tests"]
+        self.pipeline["tests_desc"].update(custom_tests)
+        self.pipeline["tests_desc"] = {
+            key: self.pipeline["tests_desc"][key]
+            for key in self.pipeline["tests_desc"]
             if key not in exclude_tests
         }
 
@@ -52,20 +53,20 @@ class Validation:
         os.makedirs(store_dir, exist_ok=True)
         return store_dir
 
-    def validate(self):
+    def validate(self, save_excel=True):
         tests_result = dict()
         store_dir = self._create_store_dir()
         precomputed = FSDict(os.path.join(
             store_dir, 'precomputes'), compress=0)
-        for test_name in self.pipeline["tests"]:
+        for test_name in self.pipeline["tests_desc"]:
             try:
-                if "import_path" in self.pipeline["tests"][test_name]:
+                if "import_path" in self.pipeline["tests_desc"][test_name]:
                     test_function = get_callable_from_path(
-                        self.pipeline["tests"][test_name]["import_path"]
+                        self.pipeline["tests_desc"][test_name]["import_path"]
                     )
                 else:
-                    test_function = self.pipeline["tests"][test_name]["callable"]
-                test_params = self.pipeline["tests"][test_name].get(
+                    test_function = self.pipeline["tests_desc"][test_name]["callable"]
+                test_params = self.pipeline["tests_desc"][test_name].get(
                     "params", {})
                 tests_result[test_name] = test_function(
                     model=self.model,
@@ -76,18 +77,18 @@ class Validation:
                 )
             except Exception as e:
                 tests_result[test_name] = {
-                    'semaphore': traceback.format_exc(),
+                    'semaphore': 'gray',
                     'result_dict': None,
-                    'result_dataframes': [],
+                    'result_dataframes': [pd.DataFrame([{'error': traceback.format_exc()}])],
                     'result_plots': []
                 }
-                print(tests_result[test_name]['semaphore'])
 
-        result_of_validation = self.aggregate_results(tests_result)
-        return result_of_validation
+        if save_excel:
+            aggregator = Aggregator(
+                save_path=os.path.join(store_dir, 'excel_report.xlsx'))
+            aggregator.agregate(
+                tests_result, self.pipeline['tests_desc'], self.pipeline['aggregation_mode_by_block'])
+        return tests_result
 
     def _parse_pipeline(self, path_to_pipeline):
         return parse_pipeline(path_to_pipeline)
-
-    def aggregate_results(self, tests_result):
-        return tests_result
