@@ -5,58 +5,77 @@ import numpy as np
 import pandas as pd
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_array
-import physt
+from physt.binnings import scott_binning
 
 import sbe_vallib.utils.pd_np_interface as interface
 
 
-class Quantization(BaseEstimator, TransformerMixin):
+class Quantizer(BaseEstimator, TransformerMixin):
+    TRASH_CAT_BUCKET = '__other'
 
     def __init__(self,
-                 merge_quantile=0.05,
-                 rounding_precision=5):
-        super().__init__()
-        self.merge_quantile = merge_quantile
-        self.rounding_precision = rounding_precision
-        self.bins = dict()
+                 less_count_is_cat: int = 20,
+                 drop_cat_freq_less: float = 0.05,
+                 ):
+        self.less_count_is_cat = less_count_is_cat
+        self.drop_cat_freq_less = drop_cat_freq_less
+        self.bins = {}
+        self.columns = None
+        self.cat_columns = None
 
-    def _check_nan(self, x):
-        if np.isnan(x).sum() > 0:
-            raise ValueError("""Data in 'columns' of 'x' must not contain nan values.
-            You can replace it with np.inf or something else""")
-
-    def merging_binning(self, data: np.ndarray):
-        bins = np.unique(data)
-        initial_width = np.min(np.abs(bins[:-1] - bins[1:])) / 2
-        bins = np.concatenate(
-            (bins - initial_width, bins + initial_width), axis=0)
-        bins = np.unique(np.round(bins, self.rounding_precision))
-
-        hist = physt.h1(data, bins=bins)
-        hist = hist.merge_bins(min_frequency=len(data) * self.merge_quantile)
-        bins = np.concatenate([[-np.inf], hist.edges, [np.inf]])
-        return bins
-
-    def fit(self, X: Union[np.ndarray, pd.DataFrame], y=None, columns: List = None):
+    def fit(self, X, y=None, columns=None):
         if columns is None:
-            columns = interface.all_columns(X)
+            self.columns = interface.all_columns(X)
+        else:
+            self.columns = columns
+        self.cat_columns = self.get_cat_features(
+            interface.get_columns(X, self.columns), self.columns)
 
-        data = np.array(interface.get_columns(X, columns))
-        self._check_nan(data)
-        check_array(X, force_all_finite=False)
+        for column in self.columns:
+            data_column = np.ravel(interface.get_columns(X, [column]))
+            if column in self.cat_columns:
+                self.bins[column] = self.get_good_represented_cats(data_column)
+            else:
+                self.bins[column] = scott_binning(data_column).numpy_bins
 
-        for i, col in enumerate(range(data.shape[1])):
-            self.bins[col] = self.merging_binning(data[:, i])
-            # edges = physt.histogram(data[:, i], 'knuth').edges
-            # self.bins[col] = np.concatenate([[-np.inf], edges, [np.inf]])
-        return self
+    def transform(self, X):
+        _X = deepcopy(X)
+        for column in self.columns:
+            data_column = np.ravel(interface.get_columns(_X, [column]))
+            if column in self.cat_columns:
+                binned = self.cat_digitize(data_column, self.bins[column])
+                interface.set_column(_X, binned, column)
+            else:
+                binned = np.digitize(data_column, bins=self.bins[column])
+                interface.set_column(_X, binned, column)
+        return _X
 
-    def transform(self, data: Union[np.ndarray, pd.DataFrame]):
-        quantized = deepcopy(data)
-        check_array(quantized, force_all_finite=False)
-        for col in self.bins:
-            samples = interface.get_columns(quantized, col)
-            self._check_nan(samples)
-            binned_data = np.digitize(samples, bins=self.bins[col])
-            interface.set_column(quantized, binned_data, col)
-        return quantized
+    def get_bins(self, column):
+        if column not in self.bins:
+            raise ValueError(
+                'Quantizer is not fitted on this column, check parameter "column" in fit method')
+
+        if column in self.cat_columns:
+            return self.bins[column] + [self.TRASH_CAT_BUCKET]
+        else:
+            return self.bins[column]
+
+    def get_good_represented_cats(self, series):
+        counts = pd.value_counts(series).reset_index(
+            name='count').sort_values(by='count')
+        counts['freq'] = counts['count'] / counts['count'].sum()
+        remain_cats = (
+            counts[counts['freq'] >= self.drop_cat_freq_less]['index']).to_list()
+        return remain_cats
+
+    def get_cat_features(self, data, columns):
+        df = pd.DataFrame(data, columns=columns)
+        cat_features = df.select_dtypes(
+            include=['object', 'category']).columns.to_list()
+        low_unique = df.columns[df.nunique(
+        ) <= self.less_count_is_cat].to_list()
+        cat_features = list(set(cat_features) | set(low_unique))
+        return cat_features
+
+    def cat_digitize(self, series, bins):
+        return list(map(lambda x: x if x in bins else self.TRASH_CAT_BUCKET, series))
