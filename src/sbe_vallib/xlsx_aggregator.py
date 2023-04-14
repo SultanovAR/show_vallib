@@ -16,11 +16,11 @@ from sbe_vallib.utils.image import PIL2IOBytes
 
 class Aggregator:
     def __init__(self, save_path: tp.Union[str, os.PathLike],
-                 default_purpose: str='Не указана',
-                 default_interpretation: str='Не указана',
-                 default_thresholds: tp.Tuple=(3 * ['Не указан']),
-                 global_width: int=800,
-                 max_col_width: int=150):
+                 default_purpose: str = 'Не указана',
+                 default_interpretation: str = 'Не указана',
+                 default_thresholds: tp.Tuple = (3 * ['Не указан']),
+                 global_width: int = 800,
+                 max_col_width: int = 150):
         """
         :param save_path: path where the excel file will be saved
         :param default_purpose: Set the default value of the purpose field for each test
@@ -102,19 +102,19 @@ class Aggregator:
             for table in test_results[test_key]['result_dataframes']:
                 self.workbook.insert_table(table)
 
-            if thresholds is not None:
+            if not pd.isna(thresholds).all():
                 self.workbook.insert_thresholds_info(*thresholds)
 
             for ind, pil_img in enumerate(test_results[test_key]['result_plots']):
                 self.workbook.insert_image(
                     pil_img, image_name=f'{test_key}_{ind}')
 
-            if purpose is not None:
-                self.workbook.insert_titled_text(purpose, 'Цель теста:')
+            if not pd.isna(purpose):
+                self.workbook.insert_titled_text(str(purpose), 'Цель теста:')
 
-            if interpretation is not None:
+            if not pd.isna(interpretation):
                 self.workbook.insert_titled_text(
-                    interpretation, 'Интерпретация')
+                    str(interpretation), 'Интерпретация')
 
     def make_summarization_sheet(self, test_results, tests_desc, aggregation_mode_by_block):
         self.workbook.set_active_sheet('summarization')

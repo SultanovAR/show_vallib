@@ -5,12 +5,21 @@ import typing as tp
 class BaseSampler(ABC):
     def __init__(
         self,
-        train,
+        train: dict,
         oos: tp.Optional[dict],
         oot: tp.Optional[dict],
         **kwargs
     ):
-
+        """
+        Parameters
+        ----------
+        train : dict
+            {"X": Iterable, 'y_true': Iterable, 'y_pred': Optional[Iterable]}
+        oos : tp.Optional[dict]
+            {"X": Iterable, 'y_true': Iterable, 'y_pred': Optional[Iterable]}
+        oot : tp.Optional[dict]
+            {"X": Iterable, 'y_true': Iterable, 'y_pred': Optional[Iterable]}
+        """
         self.source_train = train
         self.source_oos = oos
         self.source_oot = oot

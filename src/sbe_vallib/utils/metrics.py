@@ -17,8 +17,8 @@ import seqeval.metrics
 from seqeval.scheme import IOB2
 
 
-def gini_score(y_true, y_proba):
-    return 2 * roc_auc_score(y_true, y_proba) - 1
+def gini_score(y_true, y_proba, **kwargs):
+    return 2 * roc_auc_score(y_true, y_proba, **kwargs) - 1
 
 
 BINARY_METRICS = {

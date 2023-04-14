@@ -18,6 +18,7 @@ class Validation:
             scorer,
             pipeline: tp.Union[os.PathLike, tp.Tuple[dict]
                                ] = "sbe_vallib/table/pipelines/Config_31.xlsx",
+            tests_params: dict = {},
             exclude_tests: tp.List[str] = [],
             custom_tests: tp.Dict = {},
             store_path: os.PathLike = './test_results'):
@@ -82,6 +83,7 @@ class Validation:
         self.model = model
         self.sampler = sampler
         self.scorer = scorer
+        self.tests_params = tests_params
         self._store_path_prefix = store_path
 
         if isinstance(pipeline, str):
@@ -105,7 +107,7 @@ class Validation:
 
     def _create_store_dir(self):
         store_dir = os.path.join(
-            self._store_path_prefix, datetime.datetime.now().strftime('%H_%M_%d,%m,%Y'))
+            self._store_path_prefix, datetime.datetime.now().strftime('%H_%M_%S_%d,%m,%Y'))
         os.makedirs(store_dir, exist_ok=True)
         return store_dir
 
@@ -124,6 +126,7 @@ class Validation:
                     test_function = self.pipeline["tests_desc"][test_name]["callable"]
                 test_params = self.pipeline["tests_desc"][test_name].get(
                     "params", {})
+                test_params.update(self.tests_params)
                 tests_result[test_name] = test_function(
                     model=self.model,
                     sampler=self.sampler,

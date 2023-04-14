@@ -60,9 +60,11 @@ def parse_pipeline(path_to_xlsx: str):
         "Границы зеленый",
     ]
 
+    full_pipeline_df = full_pipeline_df[list(set(code_columns) | set(
+        excel_columns))].set_index("test_key")
+    full_pipeline_df = full_pipeline_df[full_pipeline_df.index.notnull()]
     tests_desc = (
-        full_pipeline_df[set(code_columns) | set(
-            excel_columns)].set_index("test_key").T.to_dict()
+        full_pipeline_df.T.to_dict()
     )
 
     for test in tests_desc:

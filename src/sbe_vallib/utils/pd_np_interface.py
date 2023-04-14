@@ -27,10 +27,18 @@ def get_index(data: tp.Union[np.ndarray, pd.DataFrame, pd.Series], index):
     return data[index]
 
 
+def get_by_mask(data: tp.Union[np.ndarray, pd.DataFrame, pd.Series], mask):
+    if is_pandas(data):
+        return data[mask]
+    elif isinstance(data, list):
+        return [data[i] for i, flag in enumerate(mask) if flag]
+    return data[mask]
+
+
 def get_columns(data: tp.Union[np.ndarray, pd.DataFrame], columns):
     """
     The get_columns function returns a subset of the columns from the input data.
-    
+
     :param data: tp.Union[np.ndarray]: Make the function compatible with both numpy arrays and pandas dataframes
     :param [pd.DataFrame]: Check if the data is a pandas dataframe
     :param columns: Select a subset of columns from the data
