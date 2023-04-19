@@ -1,5 +1,3 @@
-import typing as tp
-from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -11,7 +9,6 @@ from sklearn.utils import resample
 
 from sbe_vallib.utils.cat_features import get_cat_features
 from sbe_vallib.utils.quantization import Quantizer
-from sbe_vallib.utils.fsdict import FSDict
 import sbe_vallib.utils.pd_np_interface as interface
 from sbe_vallib.utils.metrics import gini_score
 

@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import confusion_matrix
 
 from sbe_vallib.table.fairness.detect_oppr_priv import get_oppressed_privileged_mask
 from sbe_vallib.utils.report_helper import worst_semaphore
@@ -47,9 +46,9 @@ def report_tprd_fprd_delta(tprd_fprd_delta_by_feat: dict, repr_value_by_feat, th
         i['tprd'] for i in tprd_fprd_delta_by_feat.values()]
     df['Абс. изменение FPRD после перестановки значений'] = [
         i['fprd'] for i in tprd_fprd_delta_by_feat.values()]
-    df[f'Интервал значений признака угнетаемой группы'] = [
+    df['Интервал значений признака угнетаемой группы'] = [
         repr_value_by_feat[feat]['oppr'] for feat in repr_value_by_feat]
-    df[f'Интервал значений признака привилегированной группы'] = [
+    df['Интервал значений признака привилегированной группы'] = [
         repr_value_by_feat[feat]['priv'] for feat in repr_value_by_feat]
     df['Результат теста'] = [
         color_criteria(i['tprd'], i['fprd']) for i in tprd_fprd_delta_by_feat.values()]

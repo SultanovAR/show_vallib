@@ -1,9 +1,7 @@
 import numpy as np
 import pandas as pd
-import os
 from tqdm import tqdm
 
-from matplotlib import pyplot as plt
 
 # from lightgbm import LGBMClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_score

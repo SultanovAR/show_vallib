@@ -1,13 +1,10 @@
 import numpy as np
 import pandas as pd
-import math
 import typing as tp
 
 from scipy.special import rel_entr
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder
 
-from sbe_vallib.sampler import SupervisedSampler
 from sbe_vallib.utils import pd_np_interface as interface
 from sbe_vallib.utils.quantization import Quantization
 from sbe_vallib.utils.report_helper import semaphore_by_threshold, worst_semaphore

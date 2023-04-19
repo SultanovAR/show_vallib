@@ -135,7 +135,7 @@ class Validation:
                     precomputed=precomputed,
                     **test_params
                 )
-            except Exception as e:
+            except Exception:
                 text_error = traceback.format_exc()
                 print(f'\tTest: {test_name} raised an exception:')
                 print(text_error)

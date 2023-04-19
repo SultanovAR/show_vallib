@@ -43,9 +43,9 @@ def report_target_rate_delta(tr_delta_by_feat: dict, repr_value_by_feat):
         i['oppr'] for i in tr_delta_by_feat.values()]
     df['Отн. изменение частоты таргета у привилигированной группы'] = [
         i['priv'] for i in tr_delta_by_feat.values()]
-    df[f'Интервал значений признака угнетаемой группы'] = [
+    df['Интервал значений признака угнетаемой группы'] = [
         repr_value_by_feat[feat]['oppr'] for feat in repr_value_by_feat]
-    df[f'Интервал значений признака привилегированной группы'] = [
+    df['Интервал значений признака привилегированной группы'] = [
         repr_value_by_feat[feat]['priv'] for feat in repr_value_by_feat]
     df['Результат теста'] = [
         color_criteria(i['oppr'], i['priv']) for i in tr_delta_by_feat.values()]

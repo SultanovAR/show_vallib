@@ -1,4 +1,3 @@
-import typing as tp
 from collections import defaultdict
 
 import numpy as np
@@ -58,9 +57,9 @@ def report_oppressed_privileged_ci(ci_by_feature, repr_value_by_feature, conf_lv
                 rounded_oppr)
             df[f'{conf_lvl * 100}%-ый дов. интервал для привелегированной группы'].append(
                 rounded_priv)
-        df[f'Интервал значений признака угнетаемой группы'].append(
+        df['Интервал значений признака угнетаемой группы'].append(
             repr_value_by_feature[feat]['oppr'])
-        df[f'Интервал значений признака привилегированной группы'].append(
+        df['Интервал значений признака привилегированной группы'].append(
             repr_value_by_feature[feat]['priv'])
         df['Результат теста'].append(
             color_criteria(oppr_ci, priv_ci, conf_lvls))
