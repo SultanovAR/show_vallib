@@ -12,7 +12,7 @@ from sbe_vallib.table.fairness.swapping_oppr_priv import get_swapped_oppr_priv_p
 from sbe_vallib.utils.cat_features import get_cat_features
 
 
-def report_target_rate_delta(tr_delta_by_feat: dict):
+def report_target_rate_delta(tr_delta_by_feat: dict, repr_value_by_feat):
     """
     Creates a report for the results of 'test_target_rate_delta' in pandas DataFrame format
 
@@ -39,10 +39,14 @@ def report_target_rate_delta(tr_delta_by_feat: dict):
 
     df = pd.DataFrame()
     df['Защищенная характеристика'] = list(tr_delta_by_feat.keys())
-    df['Относительное изменение частоты таргета у угнетаемой группы'] = [
+    df['Отн. изменение частоты таргета у угнетаемой группы'] = [
         i['oppr'] for i in tr_delta_by_feat.values()]
-    df['Относительное изменение частоты таргета у привилигированной группы'] = [
+    df['Отн. изменение частоты таргета у привилигированной группы'] = [
         i['priv'] for i in tr_delta_by_feat.values()]
+    df[f'Интервал значений признака угнетаемой группы'] = [
+        repr_value_by_feat[feat]['oppr'] for feat in repr_value_by_feat]
+    df[f'Интервал значений признака привилегированной группы'] = [
+        repr_value_by_feat[feat]['priv'] for feat in repr_value_by_feat]
     df['Результат теста'] = [
         color_criteria(i['oppr'], i['priv']) for i in tr_delta_by_feat.values()]
 
@@ -129,6 +133,7 @@ def test_target_rate_delta(sampler, model,
 
     cutoff = sampler.train['y_true'].mean()
     target_rates_delta_by_feat = defaultdict(dict)
+    repr_value_by_feat = defaultdict(dict)
     for feat in swapped_oppr_priv_predictions:
         for group_type in swapped_oppr_priv_predictions[feat]:
             source_preds = np.array(
@@ -138,6 +143,11 @@ def test_target_rate_delta(sampler, model,
             tr_delta = (swap_preds.mean() - source_preds.mean())\
                 / (source_preds.mean() + 1e-10)
             target_rates_delta_by_feat[feat][group_type] = tr_delta
+            repr_value_by_feat[feat][group_type] = mask_oppressed_privileged[feat][group_type]['representative_value']
 
-    result = report_target_rate_delta(target_rates_delta_by_feat)
+    result = report_target_rate_delta(
+        target_rates_delta_by_feat, repr_value_by_feat)
+    if precomputed is not None:
+        # for test_delete_protected
+        precomputed['result_target_rate_delta'] = result
     return result

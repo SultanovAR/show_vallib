@@ -13,7 +13,7 @@ from sbe_vallib.table.fairness.swapping_oppr_priv import get_swapped_oppr_priv_p
 from sbe_vallib.utils.cat_features import get_cat_features
 
 
-def report_tprd_fprd_delta(tprd_fprd_delta_by_feat: dict, thresholds=(0.1, 0.2)):
+def report_tprd_fprd_delta(tprd_fprd_delta_by_feat: dict, repr_value_by_feat, thresholds=(0.1, 0.2)):
     """
     Creates a report for the results of 'test_tprd_fprd_delta' in pandas DataFrame format
 
@@ -47,6 +47,10 @@ def report_tprd_fprd_delta(tprd_fprd_delta_by_feat: dict, thresholds=(0.1, 0.2))
         i['tprd'] for i in tprd_fprd_delta_by_feat.values()]
     df['Абс. изменение FPRD после перестановки значений'] = [
         i['fprd'] for i in tprd_fprd_delta_by_feat.values()]
+    df[f'Интервал значений признака угнетаемой группы'] = [
+        repr_value_by_feat[feat]['oppr'] for feat in repr_value_by_feat]
+    df[f'Интервал значений признака привилегированной группы'] = [
+        repr_value_by_feat[feat]['priv'] for feat in repr_value_by_feat]
     df['Результат теста'] = [
         color_criteria(i['tprd'], i['fprd']) for i in tprd_fprd_delta_by_feat.values()]
     result = {
@@ -115,6 +119,7 @@ def test_tprd_fprd_delta(sampler, model,
 
     cutoff = sampler.train['y_true'].mean()
     tprd_fprd_delta_by_feat = defaultdict(dict)
+    repr_value_by_feat = defaultdict(dict)
     for feat in swapped_oppr_priv_predictions:
         groups_metric = {'tpr': [], 'fpr': [], 'swap_tpr': [], 'swap_fpr': []}
         for group_type in ('oppr', 'priv'):
@@ -131,6 +136,7 @@ def test_tprd_fprd_delta(sampler, model,
                 swap_preds[target == 1].mean())
             groups_metric['swap_fpr'].append(
                 swap_preds[target == 0].mean())
+            repr_value_by_feat[feat][group_type] = mask_oppressed_privileged[feat][group_type]['representative_value']
 
         diff_metric = dict()
         for metric in groups_metric:
@@ -142,5 +148,9 @@ def test_tprd_fprd_delta(sampler, model,
             'fprd': abs(diff_metric['swap_fpr'] - diff_metric['fpr'])
         })
 
-    result = report_tprd_fprd_delta(tprd_fprd_delta_by_feat, thresholds)
+    result = report_tprd_fprd_delta(
+        tprd_fprd_delta_by_feat, repr_value_by_feat, thresholds)
+    if precomputed is not None:
+        # for test_delete_protected
+        precomputed['result_tprd_fprd_delta'] = result
     return result

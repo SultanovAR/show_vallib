@@ -93,7 +93,7 @@ def report_indirect_discrimination(gini_ci_by_feat, conf_lvl):
 def test_indirect_discrimination_gini(sampler, protected_feats: list,
                                       conf_lvl=0.95, n_bootstrap=200,
                                       feature_model=None, feature_preprocessor=None,
-                                      cat_features=None, random_seed=1, n_jobs=1, **kwargs):
+                                      cat_features=None, random_seed=1, n_jobs=1, precomputed=None, **kwargs):
     x_fair_train = pd.DataFrame(
         sampler.train['X']).drop(columns=protected_feats)
     x_fair_test = pd.DataFrame(sampler.oos['X']).drop(columns=protected_feats)
@@ -101,7 +101,7 @@ def test_indirect_discrimination_gini(sampler, protected_feats: list,
         if cat_features is None:
             cat_features = get_cat_features(x_fair_train)
         cat_features = list(set(cat_features).difference(protected_feats))
-        feature_model = CatBoostClassifierTrainTestSplit(iterations=2,
+        feature_model = CatBoostClassifierTrainTestSplit(iterations=64,
                                                          cat_features=cat_features,
                                                          verbose=0,
                                                          random_seed=random_seed,
@@ -141,4 +141,8 @@ def test_indirect_discrimination_gini(sampler, protected_feats: list,
         ci_l = np.quantile(gini_scores, q=(1 - conf_lvl) / 2)
         ci_u = np.quantile(gini_scores, q=(1 + conf_lvl) / 2)
         gini_quantiles[protected_feat] = (ci_l, ci_u)
-    return report_indirect_discrimination(gini_quantiles, conf_lvl)
+    result = report_indirect_discrimination(gini_quantiles, conf_lvl)
+    if precomputed is not None:
+        # for test_delete_protected
+        precomputed['result_test_indirect_discrimination_gini'] = result
+    return result

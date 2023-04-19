@@ -34,33 +34,36 @@ def color_criteria(oppr, priv, conf_lvls=(0.95, 0.99)):
     return color
 
 
-def report_oppressed_privileged_ci(ci_by_feature, conf_lvls, round_upto=3):
+def report_oppressed_privileged_ci(ci_by_feature, repr_value_by_feature, conf_lvls, round_upto=3):
     df = defaultdict(list)
     df['Защищенная характеристика'] = list(
         ci_by_feature.keys())
     for feat in ci_by_feature.keys():
-        oppr = ci_by_feature[feat]['oppr']
-        priv = ci_by_feature[feat]['priv']
+        oppr_ci = ci_by_feature[feat]['oppr']
+        priv_ci = ci_by_feature[feat]['priv']
         for conf_lvl in conf_lvls:
-            if isinstance(oppr[conf_lvl], str):
-                rounded_oppr = oppr[conf_lvl]
+            if isinstance(oppr_ci[conf_lvl], str):
+                rounded_oppr = oppr_ci[conf_lvl]
             else:
-                rounded_oppr = [round(i, round_upto) for i in oppr[conf_lvl]]
+                rounded_oppr = [round(i, round_upto)
+                                for i in oppr_ci[conf_lvl]]
 
-            if isinstance(priv[conf_lvl], str):
-                rounded_priv = priv[conf_lvl]
+            if isinstance(priv_ci[conf_lvl], str):
+                rounded_priv = priv_ci[conf_lvl]
             else:
-                rounded_priv = [round(i, round_upto) for i in priv[conf_lvl]]
+                rounded_priv = [round(i, round_upto)
+                                for i in priv_ci[conf_lvl]]
 
-            df[f'{conf_lvl * 100}%-ый доверительный интервал для угнетаемой группы'].append(
+            df[f'{conf_lvl * 100}%-ый дов. интервал для угнетаемой группы'].append(
                 rounded_oppr)
-            df[f'{conf_lvl * 100}%-ый доверительный интервал для привелегированной группы'].append(
+            df[f'{conf_lvl * 100}%-ый дов. интервал для привелегированной группы'].append(
                 rounded_priv)
-        df[f'Интервал значения признака угнетаемой группы'].append(
-            oppr['value'])
-        df[f'Интервал значения признака привилегированной группы'].append(
-            priv['value'])
-        df['Результат теста'].append(color_criteria(oppr, priv, conf_lvls))
+        df[f'Интервал значений признака угнетаемой группы'].append(
+            repr_value_by_feature[feat]['oppr'])
+        df[f'Интервал значений признака привилегированной группы'].append(
+            repr_value_by_feature[feat]['priv'])
+        df['Результат теста'].append(
+            color_criteria(oppr_ci, priv_ci, conf_lvls))
     df = pd.DataFrame(df)
 
     result = {
@@ -138,6 +141,7 @@ def test_oppressed_privileged_ci(model, sampler, protected_feats,
         sampler.oos['y_pred'] = model.predict_proba(sampler.oos['X'])
 
     ci_by_feature = defaultdict(dict)
+    repr_value_by_feature = defaultdict(dict)
     for protected_feat in mask_oppressed_privileged:
         for group_type in ('oppr', 'priv'):
             group_mask = mask_oppressed_privileged[protected_feat][group_type]['mask']
@@ -157,8 +161,11 @@ def test_oppressed_privileged_ci(model, sampler, protected_feats,
                         group_score, group_target, alpha=ci_lvl)
                 ci_by_level.update({ci_lvl: ci})
             ci_by_feature[protected_feat][group_type] = ci_by_level
-            ci_by_feature[protected_feat][group_type].update(
-                {'value': repr_value})
+            repr_value_by_feature[protected_feat][group_type] = repr_value
 
-    result = report_oppressed_privileged_ci(ci_by_feature, conf_lvls)
+    result = report_oppressed_privileged_ci(
+        ci_by_feature, repr_value_by_feature, conf_lvls)
+    if precomputed is not None:
+        # for test_delete_protected
+        precomputed['result_oppressed_privileged_ci'] = result
     return result

@@ -117,6 +117,7 @@ class Validation:
         precomputed = FSDict(os.path.join(
             store_dir, 'precomputes'), compress=0)
         for test_name in self.pipeline["tests_desc"]:
+            print(f'Test: {test_name} started')
             try:
                 if "import_path" in self.pipeline["tests_desc"][test_name]:
                     test_function = get_callable_from_path(
@@ -135,10 +136,13 @@ class Validation:
                     **test_params
                 )
             except Exception as e:
+                text_error = traceback.format_exc()
+                print(f'\tTest: {test_name} raised an exception:')
+                print(text_error)
                 tests_result[test_name] = {
                     'semaphore': 'gray',
                     'result_dict': None,
-                    'result_dataframes': [pd.DataFrame([{'error': traceback.format_exc()}])],
+                    'result_dataframes': [pd.DataFrame([{'error': text_error}])],
                     'result_plots': []
                 }
 
