@@ -2,6 +2,9 @@ sbe_vallib.egg-info/*
 examples/yolo_test/preds/*
 *.db
 test_results/*
+*/catboost_info/*
+examples/fairness_results/*
+examples/yolo_example/yolov5*
 
 # Editors
 .vscode/
