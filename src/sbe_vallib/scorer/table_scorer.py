@@ -3,8 +3,6 @@ import numpy as np
 from sbe_vallib.scorer.base import BaseScorer
 from sbe_vallib.utils.metrics import (
     BINARY_METRICS,
-    REGRESSION_METRICS,
-    MULTICLASS_METRICS,
 )
 
 # добавить
