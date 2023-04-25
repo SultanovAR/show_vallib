@@ -1,9 +1,9 @@
 import numpy as np
 
 from sklearn.model_selection import train_test_split
-from sbe_vallib.sampler import BaseSampler
+from sbe_vallib.sampler.base import BaseSampler
 
-from sbe_vallib.utils import concat, get_index
+from sbe_vallib.utils.pd_np_interface import concat, get_index
 
 
 class SupervisedSampler(BaseSampler):

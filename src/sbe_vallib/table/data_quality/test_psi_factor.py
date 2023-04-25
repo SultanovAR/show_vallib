@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
 import typing as tp
+from collections import defaultdict
 
 from scipy.special import rel_entr
 from sklearn.preprocessing import LabelEncoder
 
 from sbe_vallib.utils import pd_np_interface as interface
-from sbe_vallib.utils.quantization import Quantization
+from sbe_vallib.utils.quantization import Quantizer
 from sbe_vallib.utils.report_helper import semaphore_by_threshold, worst_semaphore
 
 
@@ -29,19 +30,23 @@ def report_factor_psi(psi_of_feat: tp.Dict, threshold: tp.Tuple):
     semaphores = {feat: semaphore_by_threshold(
         psi_of_feat[feat]['psi'], threshold, False) for feat in psi_of_feat}
 
-    res_df = psi_of_feat
+    res_df = defaultdict(dict)
     for feat in psi_of_feat:
         res_df[feat]['feature'] = feat
-        res_df[feat]['hist_train'] = " ;".join([
-            f'{i:.3f}' for i in psi_of_feat[feat]['hist_train']])
-        res_df[feat]['hist_oos'] = " ;".join([
-            f'{i:.3f}' for i in psi_of_feat[feat]['hist_oos']])
+        res_df[feat]['psi'] = psi_of_feat[feat]['psi']
+        res_df[feat]['feat_type'] = psi_of_feat[feat]['feat_type']
+        res_df[feat]['bins'] = "; ".join([
+            f'{i:.2f}' for i in psi_of_feat[feat]['bins']])
+        res_df[feat]['hist_train'] = "; ".join([
+            f'{i:.2f}' for i in psi_of_feat[feat]['hist_train']])
+        res_df[feat]['hist_oos'] = "; ".join([
+            f'{i:.2f}' for i in psi_of_feat[feat]['hist_oos']])
         res_df[feat]['semaphore'] = semaphores[feat]
 
     result = dict()
     result['semaphore'] = worst_semaphore(semaphores.values())
     result['result_dict'] = psi_of_feat
-    result['result_dataframes'] = [pd.DataFrame.from_records(res_df)]
+    result['result_dataframes'] = [pd.DataFrame.from_records(res_df).T]
     result['result_plots'] = []
     return result
 
@@ -68,8 +73,7 @@ def get_feature_types(data, discr_uniq_val=10, discr_val_share=0.8):
 
 
 def test_factor_psi(sampler,
-                    merge_upto_quantile: float = 0.05,
-                    rounding_precision_bins: int = 5,
+                    min_freq_for_bin=0.05,
                     discr_uniq_val: int = 10,
                     discr_val_share: float = 0.8,
                     threshold: tp.Tuple = (0.2, 10**10), **kwargs):
@@ -77,7 +81,7 @@ def test_factor_psi(sampler,
     x_train, x_oos = sampler.train['X'], sampler.oos['X']
 
     encoder = LabelEncoder()
-    quantizer = Quantization(merge_upto_quantile, rounding_precision_bins)
+    quantizer = Quantizer(min_freq_for_bin=min_freq_for_bin)
 
     psi_of_feat = {}
     for col in interface.all_columns(x_oos):
@@ -90,8 +94,8 @@ def test_factor_psi(sampler,
             oos_col = encoder.transform(oos_col)
         bins = quantizer.fit(train_col).bins[0]
 
-        hist_train_col, _ = np.histogram(train_col, bins=bins)
-        hist_oos_col, _ = np.histogram(oos_col, bins=bins)
+        hist_train_col, _ = np.histogram(train_col, bins=bins, density=True)
+        hist_oos_col, _ = np.histogram(oos_col, bins=bins, density=True)
         psi_of_feat[col] = {
             'psi': psi(hist_train_col, hist_oos_col),
             'feat_type': feat_type,
