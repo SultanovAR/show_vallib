@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sbe_vallib"
+version = "0.0.1"
+authors = [
+  { name="KILLREAL Sergeev", email="cds@yandex.ru" },
+  { name="Azizov Timur", email="ARuSultanov@sberbank.ru" },
+  { name="Azat Sultanov", email="ARuSultanov@sberbank.ru" },
+  { name="Ivan Prodruzhnikov", email="ARuSultanov@sberbank.ru" },
+]
+description = "It helps to provide validation test for NLP, CV and Table models."
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+"Homepage" = "https://github.com/pypa/sampleproject"
+"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
